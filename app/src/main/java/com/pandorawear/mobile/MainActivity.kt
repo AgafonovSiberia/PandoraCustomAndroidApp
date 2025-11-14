@@ -1,0 +1,36 @@
+package com.pandorawear.mobile
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import com.pandorawear.mobile.data.storage.*
+import com.pandorawear.mobile.ui.theme.PandoraWearTheme
+
+
+
+class MainActivity : ComponentActivity() {
+
+    private lateinit var backendConfigStorage: BackendConfigStorage
+    private lateinit var deviceCredentialsStorage: DeviceCredentialsStorage
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        backendConfigStorage = SharedPrefsBackendConfigStorage(applicationContext)
+        deviceCredentialsStorage = SharedPrefsDeviceCredentialsStorage(applicationContext)
+
+        val initialConfig = backendConfigStorage.load()
+        val initialHasDevice = deviceCredentialsStorage.load() != null
+
+        setContent {
+            PandoraWearTheme {
+                AppRoot(
+                    initialConfig = initialConfig,
+                    initialHasDevice = initialHasDevice,
+                    backendConfigStorage = backendConfigStorage,
+                    deviceCredentialsStorage = deviceCredentialsStorage,
+                )
+            }
+        }
+    }
+}
