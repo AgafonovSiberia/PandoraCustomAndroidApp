@@ -29,7 +29,8 @@ fun SettingsScreen(
     val scope = rememberCoroutineScope()
 
     Surface(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.surface,
     ) {
         Column(
             modifier = Modifier

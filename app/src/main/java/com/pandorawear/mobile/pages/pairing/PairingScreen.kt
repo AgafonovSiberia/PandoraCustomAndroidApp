@@ -1,33 +1,22 @@
 package com.pandorawear.mobile.pages.pairing
 
-import android.content.ContentValues.TAG
-import android.util.Log
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.pandorawear.mobile.AppState
-import com.pandorawear.mobile.data.network.BackendApiClient
+import com.pandorawear.mobile.infra.network.BackendApiClient
+import com.pandorawear.mobile.infra.storage.DeviceCredentialsStorage
 
-import com.pandorawear.mobile.data.storage.DeviceCredentialsStorage
-import kotlinx.coroutines.launch
+private enum class PairingMode {
+    BY_CODE,
+    BY_EMAIL,
+}
 
 @Composable
 fun PairingScreen(
@@ -47,14 +36,84 @@ fun PairingScreen(
                 NoBackendConfiguredState(onOpenSettings = onOpenSettings)
             }
             AppState.BACKEND_AVAILABLE_NO_DEVICE -> {
-                PairingFormState(
+                PairingModesContainer(
                     backendApiClient = backendApiClient,
                     credentialsStorage = credentialsStorage,
                     onDevicePaired = onDevicePaired,
                 )
             }
             AppState.BACKEND_READY_WITH_DEVICE -> {
-                DeviceAlreadyPairedState()
+                DeviceAlreadyPairedState(
+                    credentialsStorage = credentialsStorage
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PairingModesContainer(
+    backendApiClient: BackendApiClient?,
+    credentialsStorage: DeviceCredentialsStorage,
+    onDevicePaired: () -> Unit,
+) {
+    var mode by remember { mutableStateOf(PairingMode.BY_CODE) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Spacer(modifier = Modifier.height(32.dp))
+
+        val tabs = listOf("По коду", "По email")
+        val selectedIndex = when (mode) {
+            PairingMode.BY_CODE -> 0
+            PairingMode.BY_EMAIL -> 1
+        }
+
+        TabRow(
+            selectedTabIndex = selectedIndex,
+            containerColor = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.primary,
+            indicator = { tabPositions ->
+                TabRowDefaults.Indicator(
+                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedIndex]),
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        ) {
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedIndex == index,
+                    onClick = {
+                        mode = when (index) {
+                            0 -> PairingMode.BY_CODE
+                            else -> PairingMode.BY_EMAIL
+                        }
+                    },
+                    text = { Text(title) }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        when (mode) {
+            PairingMode.BY_CODE -> {
+                PairingByCodeForm(
+                    backendApiClient = backendApiClient,
+                    credentialsStorage = credentialsStorage,
+                    onDevicePaired = onDevicePaired,
+                )
+            }
+            PairingMode.BY_EMAIL -> {
+                PairingByEmailForm(
+                    backendApiClient = backendApiClient,
+                    credentialsStorage = credentialsStorage,
+                    onDevicePaired = onDevicePaired,
+                )
             }
         }
     }
@@ -99,150 +158,34 @@ private fun NoBackendConfiguredState(
 
 
 @Composable
-private fun PairingFormState(
-    backendApiClient: BackendApiClient?,
-    credentialsStorage: DeviceCredentialsStorage,
-    onDevicePaired: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val scope = rememberCoroutineScope()
-
-    var code by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
-    var errorText by remember { mutableStateOf<String?>(null) }
-    var successText by remember { mutableStateOf<String?>(null) }
-
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 24.dp)
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-
-            Text(
-                text = "Сопряжение устройства",
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Center,
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Введите код сопряжения, который отображается в веб-админке PandoraWear.",
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            OutlinedTextField(
-                value = code,
-                onValueChange = {
-                    code = it
-                    errorText = null
-                    successText = null
-                },
-                singleLine = true,
-                label = { Text("Код сопряжения") },
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    if (backendApiClient == null) {
-                        errorText = "Клиент backend-а недоступен"
-                        return@Button
-                    }
-
-                    scope.launch {
-                        isLoading = true
-                        errorText = null
-                        successText = null
-
-                        try {
-                            val credentials = backendApiClient.pairDevice(code.trim())
-
-                            credentialsStorage.save(credentials)
-                            successText = "Устройство успешно сопряжено"
-                            onDevicePaired()
-                        } catch (e: Exception) {
-                            errorText =
-                                "Не удалось выполнить сопряжение. Проверьте код и повторите попытку ${e.toString()}"
-
-                            Log.i(TAG, "🟦 Checking backend health at URL: $e")
-                        } finally {
-                            isLoading = false
-                        }
-                    }
-                },
-                enabled = code.isNotBlank() && !isLoading,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        strokeWidth = 2.dp,
-                    )
-                } else {
-                    Text("Сопрячь устройство")
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            if (errorText != null) {
-                Text(
-                    text = errorText ?: "",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center,
-                )
-            }
-
-            if (successText != null) {
-                Text(
-                    text = successText ?: "",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center,
-                )
-            }
-        }
-    }
-}
-
-
-@Composable
 private fun DeviceAlreadyPairedState(
     modifier: Modifier = Modifier,
+    credentialsStorage: DeviceCredentialsStorage
 ) {
+    val credentials = credentialsStorage.load()
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
+
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(horizontal = 24.dp),
         ) {
             Text(
-                text = "Устройство уже сопряжено",
+                text = "Устройство сопряжено",
                 style = MaterialTheme.typography.titleMedium,
                 textAlign = TextAlign.Center,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
+
             Text(
-                text = "Откройте вкладку Pandora, чтобы посмотреть сведения об устройстве.",
+                text = "DeviceId: ${credentials?.deviceId}",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
+                color = Color.Gray
             )
         }
     }

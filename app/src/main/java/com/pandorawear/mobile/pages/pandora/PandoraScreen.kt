@@ -12,15 +12,19 @@ import androidx.compose.ui.text.style.TextAlign
 
 @Composable
 fun PandoraScreen(modifier: Modifier = Modifier) {
-        Box(
+    Surface(
         modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-
+        color = MaterialTheme.colorScheme.surface,
     ) {
-        Text(
-            text = "Устройство авторизовано.\nЗдесь позже появятся данные Pandora.",
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-        )
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Устройство авторизовано.\nЗдесь позже появятся данные Pandora.",
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center,
+            )
+        }
     }
 }

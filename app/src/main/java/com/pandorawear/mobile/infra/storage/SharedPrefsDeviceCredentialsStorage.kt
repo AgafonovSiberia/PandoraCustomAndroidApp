@@ -1,9 +1,8 @@
-package com.pandorawear.mobile.data.storage
+package com.pandorawear.mobile.infra.storage
 
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.core.content.edit
-import java.util.UUID
 
 
 class SharedPrefsDeviceCredentialsStorage(

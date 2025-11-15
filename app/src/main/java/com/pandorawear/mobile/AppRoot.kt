@@ -16,10 +16,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.material3.NavigationBarItemDefaults
-import com.pandorawear.mobile.data.network.BackendApiClient
-import com.pandorawear.mobile.data.network.BackendApiClientFactory
-import com.pandorawear.mobile.data.network.BackendHealthChecker
-import com.pandorawear.mobile.data.storage.*
+import com.pandorawear.mobile.infra.network.BackendApiClient
+import com.pandorawear.mobile.infra.network.BackendApiClientFactory
+import com.pandorawear.mobile.infra.network.BackendHealthChecker
+import com.pandorawear.mobile.infra.storage.*
 import com.pandorawear.mobile.pages.pairing.PairingScreen
 import com.pandorawear.mobile.pages.settings.SettingsScreen
 import com.pandorawear.mobile.ui.theme.BluePrimary

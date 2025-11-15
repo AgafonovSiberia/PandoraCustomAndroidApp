@@ -1,4 +1,4 @@
-package com.pandorawear.mobile.data.network
+package com.pandorawear.mobile.dto
 
 import com.squareup.moshi.Json
 

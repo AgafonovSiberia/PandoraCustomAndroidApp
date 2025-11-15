@@ -1,4 +1,4 @@
-package com.pandorawear.mobile.data.storage
+package com.pandorawear.mobile.infra.storage
 
 interface BackendConfigStorage {
 

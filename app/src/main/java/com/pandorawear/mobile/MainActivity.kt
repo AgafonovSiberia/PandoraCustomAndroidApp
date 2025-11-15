@@ -3,7 +3,7 @@ package com.pandorawear.mobile
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.pandorawear.mobile.data.storage.*
+import com.pandorawear.mobile.infra.storage.*
 import com.pandorawear.mobile.ui.theme.PandoraWearTheme
 
 

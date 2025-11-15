@@ -1,4 +1,4 @@
-package com.pandorawear.mobile.data.network
+package com.pandorawear.mobile.infra.network
 
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
