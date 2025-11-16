@@ -8,7 +8,7 @@ val BluePrimaryDark = Color(0xFF2E54B8)
 val BlueSecondary = Color(0xFF6A8DF3)
 
 // Фоновые слои
-val BackgroundDark = Color(0xFF333333)
+val BackgroundDark = Color(0xFF2b2a28)
 val SurfaceDark = Color(0xFF212121)
 val SurfaceDarkLow = Color(0x212121)
 val SurfaceDarkHigh = Color(0xFF232323)

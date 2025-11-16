@@ -1,6 +1,7 @@
 package com.pandorawear.mobile.infra.network
 
 import android.util.Log
+import com.pandorawear.mobile.infra.storage.DeviceCredentialsStorage
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient
@@ -15,9 +16,10 @@ object BackendApiClientFactory {
     fun create(
         baseUrl: String,
         isDebug: Boolean = true,
+        credentialsStorage: DeviceCredentialsStorage,
     ): BackendApiClient {
         val moshi = Moshi.Builder()
-            .addLast(KotlinJsonAdapterFactory())      // <-- ВАЖНО
+            .add(KotlinJsonAdapterFactory())
             .build()
 
         val logging = HttpLoggingInterceptor().apply {
@@ -30,6 +32,7 @@ object BackendApiClientFactory {
 
         val okHttpClient = OkHttpClient.Builder()
             .addInterceptor(logging)
+            .addInterceptor(AuthCookieInterceptor(credentialsStorage))
             .build()
 
         val normalizedBaseUrl = normalizeBaseUrl(baseUrl)

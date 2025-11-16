@@ -29,7 +29,7 @@ fun PairingScreen(
 ) {
     Surface(
         modifier = modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.surface,
+        color = Color.Transparent,
     ) {
         when (appState) {
             AppState.BACKEND_UNAVAILABLE -> {
@@ -58,62 +58,67 @@ private fun PairingModesContainer(
     onDevicePaired: () -> Unit,
 ) {
     var mode by remember { mutableStateOf(PairingMode.BY_CODE) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.Transparent,
     ) {
-        Spacer(modifier = Modifier.height(32.dp))
-
-        val tabs = listOf("По коду", "По email")
-        val selectedIndex = when (mode) {
-            PairingMode.BY_CODE -> 0
-            PairingMode.BY_EMAIL -> 1
-        }
-
-        TabRow(
-            selectedTabIndex = selectedIndex,
-            containerColor = Color.Transparent,
-            contentColor = MaterialTheme.colorScheme.primary,
-            indicator = { tabPositions ->
-                TabRowDefaults.Indicator(
-                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedIndex]),
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = selectedIndex == index,
-                    onClick = {
-                        mode = when (index) {
-                            0 -> PairingMode.BY_CODE
-                            else -> PairingMode.BY_EMAIL
-                        }
-                    },
-                    text = { Text(title) }
-                )
-            }
-        }
+            Spacer(modifier = Modifier.height(32.dp))
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        when (mode) {
-            PairingMode.BY_CODE -> {
-                PairingByCodeForm(
-                    backendApiClient = backendApiClient,
-                    credentialsStorage = credentialsStorage,
-                    onDevicePaired = onDevicePaired,
-                )
+            val tabs = listOf("По коду", "По email")
+            val selectedIndex = when (mode) {
+                PairingMode.BY_CODE -> 0
+                PairingMode.BY_EMAIL -> 1
             }
-            PairingMode.BY_EMAIL -> {
-                PairingByEmailForm(
-                    backendApiClient = backendApiClient,
-                    credentialsStorage = credentialsStorage,
-                    onDevicePaired = onDevicePaired,
-                )
+
+            TabRow(
+                selectedTabIndex = selectedIndex,
+                containerColor = Color.Transparent,
+                contentColor = MaterialTheme.colorScheme.primary,
+                indicator = { tabPositions ->
+                    TabRowDefaults.Indicator(
+                        modifier = Modifier.tabIndicatorOffset(tabPositions[selectedIndex]),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            ) {
+                tabs.forEachIndexed { index, title ->
+                    Tab(
+                        selected = selectedIndex == index,
+                        onClick = {
+                            mode = when (index) {
+                                0 -> PairingMode.BY_CODE
+                                else -> PairingMode.BY_EMAIL
+                            }
+                        },
+                        text = { Text(title) }
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            when (mode) {
+                PairingMode.BY_CODE -> {
+                    PairingByCodeForm(
+                        backendApiClient = backendApiClient,
+                        credentialsStorage = credentialsStorage,
+                        onDevicePaired = onDevicePaired,
+                    )
+                }
+
+                PairingMode.BY_EMAIL -> {
+                    PairingByEmailForm(
+                        backendApiClient = backendApiClient,
+                        credentialsStorage = credentialsStorage,
+                        onDevicePaired = onDevicePaired,
+                    )
+                }
             }
         }
     }
@@ -125,32 +130,37 @@ private fun NoBackendConfiguredState(
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color.Transparent,
     ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(horizontal = 24.dp),
+        Box(
+            modifier = modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
         ) {
-            Text(
-                text = "Сначала настрой сервер",
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Center,
-            )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(horizontal = 24.dp),
+            ) {
+                Text(
+                    text = "Сначала настрой сервер",
+                    style = MaterialTheme.typography.titleMedium,
+                    textAlign = TextAlign.Center,
+                )
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = "Укажите адрес backend-а во вкладке «Настройки», затем вернитесь к сопряжению.",
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-            )
+                Text(
+                    text = "Укажите адрес backend-а во вкладке «Настройки», затем вернитесь к сопряжению.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                )
 
-            Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-            Button(onClick = onOpenSettings) {
-                Text("Перейти в настройки")
+                Button(onClick = onOpenSettings) {
+                    Text("Перейти в настройки")
+                }
             }
         }
     }

@@ -62,7 +62,7 @@ private fun BottomDockBar(
         modifier = Modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 12.dp, vertical = 8.dp)
             .shadow(
                 elevation = 12.dp,
                 shape = RoundedCornerShape(24.dp),
@@ -143,7 +143,7 @@ private fun BottomDockBar(
                 )
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(3.dp))
             Box(
                 modifier = Modifier
                     .width(42.dp)
@@ -202,7 +202,11 @@ fun AppRoot(
         else {
             val rawBase = if (port.isNotBlank()) "${host.trim()}:${port.trim()}" else host.trim()
             runCatching {
-                BackendApiClientFactory.create(rawBase, true)
+                BackendApiClientFactory.create(
+                    baseUrl = rawBase,
+                    isDebug = true,
+                    credentialsStorage = deviceCredentialsStorage
+                )
             }.getOrNull()
         }
     }
@@ -268,6 +272,7 @@ fun AppRoot(
 
             MainTab.PANDORA -> {
                 PandoraScreen(
+                    backendApiClient = backendApiClient,
                     modifier = Modifier.padding(padding),
                 )
             }
