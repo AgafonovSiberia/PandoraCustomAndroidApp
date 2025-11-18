@@ -12,8 +12,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PandoraWear"
         android:usesCleartextTraffic="true"
+
         >
 
+        <service
+            android:name=".wearbridge.WearBridgeService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.BIND_LISTENER"
+                    tools:ignore="WearableBindListener" />
+            </intent-filter>
+        </service>
         <activity
             android:name=".MainActivity"
             android:exported="true"

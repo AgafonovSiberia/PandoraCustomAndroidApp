@@ -4,6 +4,7 @@ import com.squareup.moshi.Json
 
 data class CommandRequestPayload(
     @Json(name = "protocol_version") val protocolVersion: Int,
+    @Json(name = "alarm_device_id") val alarmDeviceId: Int,
     @Json(name = "request_id") val requestId: String,
     @Json(name = "action") val action: String,
 )

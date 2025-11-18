@@ -9,11 +9,13 @@ data class StatusRequestPayload(
 
 data class StatusResponsePayload(
     @Json(name = "protocol_version") val protocolVersion: Int,
+    @Json(name = "alarm_device_id") val alarmDeviceId: Int?,
     @Json(name = "request_id") val requestId: String?,
     @Json(name = "status") val status: StatusDto?,
 )
 
 data class StatusDto(
+    @Json(name = "alarm_device_id") val alarmDeviceId: Int?,
     @Json(name = "is_ready") val isReady: Boolean,
     @Json(name = "car_name") val carName: String?,
     @Json(name = "temperature") val temperature: Double?,

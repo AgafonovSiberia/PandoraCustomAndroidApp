@@ -67,5 +67,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android.v181)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.play.services.wearable)
 
 }
