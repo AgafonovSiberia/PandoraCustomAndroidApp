@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.pandorawear.mobile.infra.storage.*
-import com.pandorawear.mobile.ui.theme.PandoraWearTheme
+import com.pandorawear.mobile.theme.PandoraWearTheme
 
 
 

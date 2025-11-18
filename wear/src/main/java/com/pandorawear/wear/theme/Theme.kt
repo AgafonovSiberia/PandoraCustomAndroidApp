@@ -1,4 +1,4 @@
-package com.pandorawear.mobile.ui.theme
+package com.pandorawear.wear.theme
 
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.MaterialTheme

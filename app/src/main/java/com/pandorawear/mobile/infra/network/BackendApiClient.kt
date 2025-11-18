@@ -1,8 +1,8 @@
 package com.pandorawear.mobile.infra.network
 
 
-import com.pandorawear.mobile.dto.AlarmActionDto
-import com.pandorawear.mobile.dto.AlarmDeviceUiModel
+import com.pandorawear.mobile.models.AlarmActionDto
+import com.pandorawear.mobile.models.AlarmDeviceUiModel
 import com.pandorawear.mobile.infra.storage.DeviceCredentials
 
 interface BackendApiClient {

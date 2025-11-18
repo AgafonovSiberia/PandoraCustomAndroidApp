@@ -1,14 +1,12 @@
 package com.pandorawear.mobile.infra.network
 
 
-import com.pandorawear.mobile.dto.AlarmActionDto
-import com.pandorawear.mobile.dto.AlarmCommandRequest
-import com.pandorawear.mobile.dto.CredPairRequestDto
-import com.pandorawear.mobile.dto.PairResponseDto
-import com.pandorawear.mobile.dto.PandoraDeviceDto
+import com.pandorawear.mobile.models.AlarmCommandRequest
+import com.pandorawear.mobile.models.CredPairRequestDto
+import com.pandorawear.mobile.models.PairResponseDto
+import com.pandorawear.mobile.models.PandoraDeviceDto
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Path
 

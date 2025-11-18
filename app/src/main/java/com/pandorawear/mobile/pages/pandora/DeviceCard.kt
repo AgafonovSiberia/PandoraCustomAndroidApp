@@ -21,7 +21,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.pandorawear.mobile.dto.AlarmDeviceUiModel
+import com.pandorawear.mobile.models.AlarmDeviceUiModel
 
 @Composable
 fun DeviceCard(

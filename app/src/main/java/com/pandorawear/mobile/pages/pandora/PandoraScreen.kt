@@ -14,8 +14,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
-import com.pandorawear.mobile.dto.AlarmActionDto
-import com.pandorawear.mobile.dto.AlarmDeviceUiModel
+import com.pandorawear.mobile.models.AlarmActionDto
+import com.pandorawear.mobile.models.AlarmDeviceUiModel
 import com.pandorawear.mobile.infra.network.BackendApiClient
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -112,8 +112,6 @@ fun PandoraScreen(
                             device = device,
                             onEngineConfirmed = {
                                 if (backendApiClient == null) return@DeviceCard
-
-                                val alarmDeviceId = device.id
 
                                 val action = if (device.engineRpm > 0) {
                                     AlarmActionDto.STOP

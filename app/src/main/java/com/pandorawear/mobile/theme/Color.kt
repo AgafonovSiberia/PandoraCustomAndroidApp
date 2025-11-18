@@ -1,4 +1,4 @@
-package com.pandorawear.mobile.ui.theme
+package com.pandorawear.mobile.theme
 
 import androidx.compose.ui.graphics.Color
 
@@ -10,13 +10,11 @@ val BlueSecondary = Color(0xFF6A8DF3)
 // Фоновые слои
 val BackgroundDark = Color(0xFF2b2a28)
 val SurfaceDark = Color(0xFF212121)
-val SurfaceDarkLow = Color(0x212121)
-val SurfaceDarkHigh = Color(0xFF232323)
+val SurfaceDarkLow = Color(0xFF212121)
 
 // Текст
 val TextPrimary = Color(0xFFEAEAEA)
 val TextSecondary = Color(0xFFB3B3B3)
-val TextDisabled = Color(0xFF666666)
 
 // Ошибки
 val ErrorRed = Color(0xFFFF4A4A)

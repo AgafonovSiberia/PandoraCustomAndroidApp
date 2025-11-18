@@ -1,10 +1,10 @@
 package com.pandorawear.mobile.infra.network
 
-import com.pandorawear.mobile.dto.AlarmActionDto
-import com.pandorawear.mobile.dto.AlarmCommandRequest
-import com.pandorawear.mobile.dto.AlarmDeviceUiModel
-import com.pandorawear.mobile.dto.CredPairRequestDto
-import com.pandorawear.mobile.dto.toUiModel
+import com.pandorawear.mobile.models.AlarmActionDto
+import com.pandorawear.mobile.models.AlarmCommandRequest
+import com.pandorawear.mobile.models.AlarmDeviceUiModel
+import com.pandorawear.mobile.models.CredPairRequestDto
+import com.pandorawear.mobile.models.toUiModel
 import com.pandorawear.mobile.infra.storage.DeviceCredentials
 
 class RetrofitBackendApiClient(

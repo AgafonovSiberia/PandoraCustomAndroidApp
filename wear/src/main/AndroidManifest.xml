@@ -27,7 +27,7 @@
             android:value="true" />
 
         <activity
-            android:name=".presentation.MainWear"
+            android:name=".MainWear"
             android:exported="true"
             android:taskAffinity=""
             android:theme="@style/MainWearTheme.Starting">

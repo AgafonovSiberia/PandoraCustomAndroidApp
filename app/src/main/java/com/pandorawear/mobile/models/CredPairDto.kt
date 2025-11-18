@@ -1,4 +1,4 @@
-package com.pandorawear.mobile.dto
+package com.pandorawear.mobile.models
 
 import com.squareup.moshi.Json
 

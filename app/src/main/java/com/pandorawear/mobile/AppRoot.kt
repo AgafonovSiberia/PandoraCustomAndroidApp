@@ -22,9 +22,9 @@ import com.pandorawear.mobile.infra.network.BackendHealthChecker
 import com.pandorawear.mobile.infra.storage.*
 import com.pandorawear.mobile.pages.pairing.PairingScreen
 import com.pandorawear.mobile.pages.settings.SettingsScreen
-import com.pandorawear.mobile.ui.theme.BluePrimary
-import com.pandorawear.mobile.ui.theme.SurfaceDark
-import com.pandorawear.mobile.ui.theme.TextSecondary
+import com.pandorawear.mobile.theme.BluePrimary
+import com.pandorawear.mobile.theme.SurfaceDark
+import com.pandorawear.mobile.theme.TextSecondary
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
