@@ -98,9 +98,6 @@ class WearBridgeService : WearableListenerService() {
         }
     }
 
-    /**
-     * Гарантируем наличие BackendApiClient, если есть конфиг и креды.
-     */
     private fun prepareBackendClient(): BackendApiClient? {
         val config = backendConfigStorage.load() ?: run {
             Log.w(TAG, "Backend config is null")
