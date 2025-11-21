@@ -83,11 +83,10 @@ fun DeviceCard(
 
             Spacer(Modifier.height(12.dp))
 
-            // ───── Большая иконка авто во всю строку ─────
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),          // занимает всё доступное вертикальное пространство
+                    .weight(1f),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -103,7 +102,6 @@ fun DeviceCard(
 
             Spacer(Modifier.height(50.dp))
 
-            // ───── Ряд иконок параметров авто ─────
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
