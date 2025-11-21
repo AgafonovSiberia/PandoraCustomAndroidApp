@@ -1,31 +1,17 @@
 package com.pandorawear.mobile.infra.network
 
 
+
 object BackendUrls {
 
     fun baseUrl(host: String, port: String): String {
-        val trimmedHost = host.trim().removeSuffix("/")
+        var url = host.trim()
 
-        val withScheme = if (
-            trimmedHost.startsWith("http://") ||
-            trimmedHost.startsWith("https://")
-        ) {
-            trimmedHost
-        } else {
-            "http://$trimmedHost"
+        if (!url.endsWith("/")) {
+            url = "$url/"
         }
 
-        val withPort = if (port.isNotBlank()) {
-            "$withScheme:$port"
-        } else {
-            withScheme
-        }
-
-        return if (withPort.endsWith("/")) {
-            withPort
-        } else {
-            "$withPort/"
-        }
+        return url
     }
 
     fun readyUrl(host: String, port: String): String {

@@ -55,10 +55,6 @@ object BackendApiClientFactory {
     private fun normalizeBaseUrl(raw: String): String {
         var url = raw.trim()
 
-        if (!url.startsWith("http://")) {
-            url = "http://$url"
-        }
-
         if (!url.endsWith("/")) {
             url += "/"
         }

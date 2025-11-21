@@ -55,7 +55,7 @@ fun SettingsScreen(
                     checkResultText = null
                 },
                 label = { Text("Host") },
-                placeholder = { Text("10.0.2.2 или api.example.com") },
+                placeholder = { Text("http://10.0.2.2 или https://api.example.com") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions.Default.copy(
                     imeAction = ImeAction.Next,
