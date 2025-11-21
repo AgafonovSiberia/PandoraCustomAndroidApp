@@ -114,7 +114,7 @@ private fun ReadyScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = status.carName ?: "Pandora",
+            text = status.name ?: "Pandora",
             style = MaterialTheme.typography.titleMedium,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onBackground,
@@ -123,7 +123,7 @@ private fun ReadyScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = status.temperature?.let { "${it}°C" } ?: "Температура: —",
+            text = status.engineTemp?.let { "${it}°C" } ?: "Температура: —",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onBackground,
