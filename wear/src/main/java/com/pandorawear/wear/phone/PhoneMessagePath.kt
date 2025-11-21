@@ -6,5 +6,4 @@ object PhoneMessagePath {
     const val COMMAND = "/pandora/command"
     const val COMMAND_RESPONSE = "/pandora/command/response"
 
-    const val PROTOCOL_VERSION: Int = 1
 }

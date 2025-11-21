@@ -1,5 +1,6 @@
 package com.pandorawear.mobile.infra.network
 
+import android.util.Log
 import com.pandorawear.mobile.models.AlarmActionDto
 import com.pandorawear.mobile.models.AlarmCommandRequest
 import com.pandorawear.mobile.models.AlarmDeviceUiModel
@@ -37,6 +38,7 @@ class RetrofitBackendApiClient(
         alarmDeviceId: Integer,
         action: AlarmActionDto,
     ) {
+        Log.d("WearBridgeService", "sendAlarmCommand $action")
         api.sendAlarmCommand(
             AlarmCommandRequest(
                 alarmDeviceId = alarmDeviceId,

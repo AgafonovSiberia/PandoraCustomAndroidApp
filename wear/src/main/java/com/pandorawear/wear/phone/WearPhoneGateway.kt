@@ -1,6 +1,7 @@
 package com.pandorawear.wear.phone
 
 import android.content.Context
+import android.util.Log
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.Wearable
@@ -106,7 +107,6 @@ class WearPhoneGateway(
             pendingStatusRequests[requestId] = deferred
 
             val payload = StatusRequestPayload(
-                protocolVersion = PhoneMessagePath.PROTOCOL_VERSION,
                 requestId = requestId,
             )
 
@@ -126,21 +126,19 @@ class WearPhoneGateway(
                 throw IllegalStateException("Тайм-аут при ожидании ответа статуса", e)
             }
 
-            if (response.protocolVersion != PhoneMessagePath.PROTOCOL_VERSION) {
-                throw IllegalStateException("Несовместимая версия протокола: ${response.protocolVersion}")
-            }
 
             val statusDto = response.status
-                ?: throw IllegalStateException("Пустое поле status в ответе телефона")
 
             statusDto.toDomain()
         }
     }
 
-    override suspend fun sendCommand(command: PandoraCommand, alarmDeviceId: Int): Result<WatchPandoraStatus> {
+    override suspend fun sendCommand(command: PandoraCommand, alarmDeviceId: Integer): Result<WatchPandoraStatus> {
         return runCatching {
             val nodeId = getOrResolvePhoneNodeId()
                 ?: throw IllegalStateException("Телефон не найден (нет подключённых узлов)")
+
+            Log.d("WearPhoneGateway", "sendCommand: command=$command, alarmDeviceId=$alarmDeviceId, nodeId=$nodeId")
 
             val requestId = UUID.randomUUID().toString()
             val deferred = CompletableDeferred<CommandResponsePayload>()
@@ -148,14 +146,13 @@ class WearPhoneGateway(
 
             val payload = CommandRequestPayload(
                 alarmDeviceId = alarmDeviceId,
-                protocolVersion = PhoneMessagePath.PROTOCOL_VERSION,
                 requestId = requestId,
                 action = when (command) {
                     PandoraCommand.START -> "START"
                     PandoraCommand.STOP -> "STOP"
                 },
             )
-
+            Log.d("WearPhoneGateway", "sendCommand: command=${payload}, alarmDeviceId=$alarmDeviceId")
             val json = commandRequestAdapter.toJson(payload)
             val bytes = json.toByteArray(StandardCharsets.UTF_8)
 
@@ -163,6 +160,7 @@ class WearPhoneGateway(
                 .sendMessage(nodeId, PhoneMessagePath.COMMAND, bytes)
                 .await()
 
+            Log.d("WearPhoneGateway", "sendCommand: command=${payload}, alarmDeviceId=$alarmDeviceId")
             val response = try {
                 withTimeout(timeoutMillis) {
                     deferred.await()
@@ -172,12 +170,8 @@ class WearPhoneGateway(
                 throw IllegalStateException("Тайм-аут при ожидании ответа на команду", e)
             }
 
-            if (response.protocolVersion != PhoneMessagePath.PROTOCOL_VERSION) {
-                throw IllegalStateException("Несовместимая версия протокола: ${response.protocolVersion}")
-            }
-
             if (!response.success) {
-                val errorCode = response.error ?: "UNKNOWN_ERROR"
+                val errorCode = response.status?.error ?: "UNKNOWN_ERROR"
                 throw IllegalStateException("Команда не выполнена: $errorCode")
             }
 
@@ -204,20 +198,11 @@ private fun StatusDto.toDomain(): WatchPandoraStatus {
     return WatchPandoraStatus(
         alarmDeviceId = alarmDeviceId,
         isReady = isReady,
-        carName = carName,
-        temperature = temperature?.toFloat(),
-        batteryVoltage = batteryVoltage?.toFloat(),
+        name = name,
+        engineTemp = engineTemp,
+        cabinTemp = cabinTemp,
+        batteryVoltage = batteryVoltage,
         engineRunning = engineRunning,
-        lastUpdateMillis = lastUpdateMillis,
-        errorCode = error,
-        errorMessage = when (error) {
-            null -> null
-            "NOT_READY" -> "Телефон не готов"
-            "BACKEND_UNAVAILABLE" -> "Нет связи с сервером"
-            "NO_DEVICE" -> "Устройство не привязано"
-            "COMMAND_FAILED" -> "Ошибка при выполнении команды"
-            "INCOMPATIBLE_PROTOCOL" -> "Несовместимая версия протокола"
-            else -> "Ошибка: $error"
-        },
+        errorMsg = error
     )
 }

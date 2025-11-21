@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 class PandoraWatchViewModel(
     private val phoneGateway: PhoneGateway,
-    private val pollingIntervalMillis: Long = 3_000L,
+    private val pollingIntervalMillis: Long = 10_000L,
 ) : ViewModel() {
 
     private val _uiState: MutableStateFlow<PandoraWatchUiState> =
@@ -56,13 +56,15 @@ class PandoraWatchViewModel(
             .onSuccess { status ->
                 lastKnownStatus = status
 
-                if (!status.isReady) {
-                    _uiState.value = PandoraWatchUiState.NotReady(
-                        lastKnownStatus = lastKnownStatus,
-                        message = status.errorMessage ?: "Настройте приложение на телефоне",
-                    )
-                } else {
-                    _uiState.value = PandoraWatchUiState.Ready(status)
+                status.isReady?.let {
+                    if (!it) {
+                        _uiState.value = PandoraWatchUiState.NotReady(
+                            lastKnownStatus = lastKnownStatus,
+                            message = status.errorMsg ?: "Настройте приложение на телефоне",
+                        )
+                    } else {
+                        _uiState.value = PandoraWatchUiState.Ready(status)
+                    }
                 }
             }
             .onFailure { error ->
@@ -80,21 +82,23 @@ class PandoraWatchViewModel(
         }
 
         val currentStatus = currentState.status
-        val alarmDeviceId = currentStatus.alarmDeviceId?: return
+        val deviceId = currentStatus.alarmDeviceId?: return
 
         viewModelScope.launch {
-            val result = phoneGateway.sendCommand(command = command, alarmDeviceId = alarmDeviceId)
+            val result = phoneGateway.sendCommand(command = command, alarmDeviceId = deviceId)
 
             result
                 .onSuccess { status ->
                     lastKnownStatus = status
-                    if (!status.isReady) {
-                        _uiState.value = PandoraWatchUiState.NotReady(
-                            lastKnownStatus = lastKnownStatus,
-                            message = status.errorMessage ?: "Телефон не готов",
-                        )
-                    } else {
-                        _uiState.value = PandoraWatchUiState.Ready(status)
+                    status.isReady?.let {
+                        if (!it) {
+                            _uiState.value = PandoraWatchUiState.NotReady(
+                                lastKnownStatus = lastKnownStatus,
+                                message = status.errorMsg ?: "Телефон не готов",
+                            )
+                        } else {
+                            _uiState.value = PandoraWatchUiState.Ready(status)
+                        }
                     }
                 }
                 .onFailure { error ->

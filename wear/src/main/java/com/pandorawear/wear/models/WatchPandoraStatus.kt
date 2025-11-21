@@ -1,13 +1,13 @@
 package com.pandorawear.wear.models
 
 data class WatchPandoraStatus(
-    val alarmDeviceId: Int?,
-    val isReady: Boolean,
-    val carName: String?,
-    val temperature: Float?,
-    val batteryVoltage: Float?,
+    val alarmDeviceId: Integer?,
+    val isReady: Boolean?,
+    val name: String?,
+    val engineTemp: Double?,
+    val cabinTemp: Double?,
+    val batteryVoltage: Double?,
     val engineRunning: Boolean?,
-    val lastUpdateMillis: Long?,
-    val errorCode: String?,
-    val errorMessage: String?,
+    val errorMsg: String?
+
 )

@@ -29,6 +29,5 @@ interface BackendApiService {
     @POST("/api/alarm/command")
     suspend fun sendAlarmCommand(
         @Body body: AlarmCommandRequest
-    ) {
-    }
+    )
 }

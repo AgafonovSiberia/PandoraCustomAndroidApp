@@ -147,14 +147,9 @@ class WearBridgeService : WearableListenerService() {
             return
         }
 
-        if (request.protocolVersion != WearBridgePaths.PROTOCOL_VERSION) {
-            sendStatusError(nodeId, request.requestId, ERROR_INCOMPATIBLE_PROTOCOL)
-            return
-        }
 
         val backend = prepareBackendClient()
         if (backend == null) {
-            // Здесь различаем: либо нет конфига/кредов, либо реально не достучались до сервера.
             val appState = resolveAppState()
             val error = when (appState) {
                 AppState.BACKEND_UNAVAILABLE -> ERROR_BACKEND_UNAVAILABLE
@@ -190,27 +185,27 @@ class WearBridgeService : WearableListenerService() {
     private fun mapDevicesToStatus(devices: List<AlarmDeviceUiModel>): StatusDto {
         val device = devices.firstOrNull()
             ?: return StatusDto(
+                alarmDeviceId = null,
+                name = null,
                 isReady = false,
-                carName = null,
-                temperature = null,
+                fuelTank = null,
+                cabinTemp = null,
+                engineTemp = null,
                 batteryVoltage = null,
                 engineRunning = null,
                 lastUpdateMillis = null,
                 error = ERROR_NO_DEVICE,
-                alarmDeviceId = null
             )
-
-        val temperature = device.outTemp.toDoubleOrNull()
-        val batteryVoltage = device.batteryVoltage
-        val engineRunning = device.engineRpm > 0
 
         return StatusDto(
             alarmDeviceId = device.id,
+            name = device.name,
             isReady = true,
-            carName = device.name,
-            temperature = temperature,
-            batteryVoltage = batteryVoltage,
-            engineRunning = engineRunning,
+            fuelTank = device.fuelTank,
+            engineTemp = device.engineTemp,
+            cabinTemp = device.cabinTemp,
+            batteryVoltage = device.batteryVoltage,
+            engineRunning = device.engineRpm > 0,
             lastUpdateMillis = null,
             error = null,
 
@@ -223,8 +218,8 @@ class WearBridgeService : WearableListenerService() {
         status: StatusDto,
     ) {
         val payload = StatusResponsePayload(
-            protocolVersion = WearBridgePaths.PROTOCOL_VERSION,
             requestId = requestId,
+            alarmDeviceId = status.alarmDeviceId,
             status = status,
         )
 
@@ -238,18 +233,20 @@ class WearBridgeService : WearableListenerService() {
         error: String,
     ) {
         val payload = StatusResponsePayload(
-            protocolVersion = WearBridgePaths.PROTOCOL_VERSION,
             requestId = requestId,
             status = StatusDto(
+                alarmDeviceId = null,
+                name = null,
                 isReady = false,
-                carName = null,
-                temperature = null,
+                fuelTank = null,
+                cabinTemp = null,
+                engineTemp = null,
                 batteryVoltage = null,
                 engineRunning = null,
                 lastUpdateMillis = null,
                 error = error,
-                alarmDeviceId = null
             ),
+            alarmDeviceId = null
         )
 
         val json = statusResponseAdapter.toJson(payload)
@@ -258,7 +255,7 @@ class WearBridgeService : WearableListenerService() {
 
     private suspend fun handleCommandRequest(nodeId: String, data: ByteArray) {
         val json = data.decodeToString()
-
+        Log.d("WearBridgeService", "payload:${json.toString()}")
         val request = try {
             commandRequestAdapter.fromJson(json)
         } catch (e: Exception) {
@@ -276,13 +273,11 @@ class WearBridgeService : WearableListenerService() {
             return
         }
 
-        if (request.protocolVersion != WearBridgePaths.PROTOCOL_VERSION) {
-            sendCommandError(nodeId, request.requestId, ERROR_INCOMPATIBLE_PROTOCOL)
-            return
-        }
-
+        Log.d("WearBridgeService", "request:${request.toString()}")
         val backend = prepareBackendClient()
+        Log.d("WearBridgeService", "backend:${backend}")
         if (backend == null) {
+            Log.d("WearBridgeService", "backend null")
             val appState = resolveAppState()
             val error = when (appState) {
                 AppState.BACKEND_UNAVAILABLE -> ERROR_BACKEND_UNAVAILABLE
@@ -295,7 +290,7 @@ class WearBridgeService : WearableListenerService() {
         }
 
         try {
-            val creds = deviceCredentialsStorage.load()
+            deviceCredentialsStorage.load()
                 ?: run {
                     sendCommandError(nodeId, request.requestId, ERROR_NO_DEVICE)
                     return
@@ -317,6 +312,7 @@ class WearBridgeService : WearableListenerService() {
             )
 
             val devices = backend.getDevices()
+            Log.d("WearBridgeService", "devices:${devices}")
             val statusDto = mapDevicesToStatus(devices)
 
             sendCommandSuccess(
@@ -336,10 +332,9 @@ class WearBridgeService : WearableListenerService() {
         status: StatusDto,
     ) {
         val payload = CommandResponsePayload(
-            protocolVersion = WearBridgePaths.PROTOCOL_VERSION,
+            alarmDeviceId = status.alarmDeviceId,
             requestId = requestId,
             success = true,
-            error = null,
             status = status,
         )
 
@@ -353,10 +348,9 @@ class WearBridgeService : WearableListenerService() {
         error: String,
     ) {
         val payload = CommandResponsePayload(
-            protocolVersion = WearBridgePaths.PROTOCOL_VERSION,
-            requestId = requestId,
+            alarmDeviceId = null,
             success = false,
-            error = error,
+            requestId = requestId,
             status = null,
         )
 

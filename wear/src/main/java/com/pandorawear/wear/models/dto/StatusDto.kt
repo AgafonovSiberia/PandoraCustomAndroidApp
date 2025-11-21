@@ -3,24 +3,51 @@ package com.pandorawear.wear.models.dto
 import com.squareup.moshi.Json
 
 data class StatusRequestPayload(
-    @Json(name = "protocol_version") val protocolVersion: Int,
-    @Json(name = "request_id") val requestId: String,
+    @param:Json(name = "request_id")
+    val requestId: String,
 )
 
 data class StatusResponsePayload(
-    @Json(name = "protocol_version") val protocolVersion: Int,
-    @Json(name = "alarm_device_id") val alarmDeviceId: Int?,
-    @Json(name = "request_id") val requestId: String?,
-    @Json(name = "status") val status: StatusDto?,
+    @param:Json(name = "alarm_device_id")
+    val alarmDeviceId: Integer?,
+
+    @param:Json(name = "request_id")
+    val requestId: String?,
+
+    @param:Json(name = "status")
+    val status: StatusDto,
 )
 
+
 data class StatusDto(
-    @Json(name = "alarm_device_id") val alarmDeviceId: Int?,
-    @Json(name = "is_ready") val isReady: Boolean,
-    @Json(name = "car_name") val carName: String?,
-    @Json(name = "temperature") val temperature: Double?,
-    @Json(name = "battery_voltage") val batteryVoltage: Double?,
-    @Json(name = "engine_running") val engineRunning: Boolean?,
-    @Json(name = "last_update_ms") val lastUpdateMillis: Long?,
-    @Json(name = "error") val error: String?,
+    @param:Json(name = "alarm_device_id")
+    val alarmDeviceId: Integer?,
+
+    @param:Json(name = "name")
+    val name: String?,
+
+    @param:Json(name = "fuel_tank")
+    val fuelTank: Int?,
+
+    @param:Json(name = "is_ready")
+    val isReady: Boolean?,
+
+    @param:Json(name = "engine_temp")
+    val engineTemp: Double?,
+
+    @param:Json(name = "cabinTemp")
+    val cabinTemp: Double?,
+
+    @param:Json(name = "voltage")
+    val batteryVoltage: Double?,
+
+    @param:Json(name = "engine_running")
+    val engineRunning: Boolean?,
+
+    @param:Json(name = "last_update_ms")
+    val lastUpdateMillis: Long?,
+
+    @param:Json(name = "error")
+    val error: String?
+
 )

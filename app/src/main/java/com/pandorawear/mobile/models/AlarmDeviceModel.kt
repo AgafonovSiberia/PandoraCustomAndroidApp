@@ -5,9 +5,9 @@ import com.squareup.moshi.JsonClass
 data class AlarmDeviceUiModel(
     val id: Integer,
     val name: String,
-    val engineTemp: String,
-    val cabinTemp: String,
-    val outTemp: String,
+    val engineTemp: Double,
+    val cabinTemp: Double,
+    val outTemp: Double,
     val batteryVoltage: Double,
     val isArmed: Boolean = true,
     val engineRpm: Int,
@@ -18,9 +18,9 @@ fun PandoraDeviceDto.toUiModel(): AlarmDeviceUiModel =
     AlarmDeviceUiModel(
         id = id,
         name = name,
-        engineTemp = "${data.engineTemp}°",
-        cabinTemp = "${data.cabinTemp}°",
-        outTemp = "${data.outTemp}°",
+        engineTemp = data.engineTemp,
+        cabinTemp = data.cabinTemp,
+        outTemp = data.outTemp,
         batteryVoltage = data.voltage,
         engineRpm = data.engineRpm,
         fuelTank = data.fuelTank
@@ -30,9 +30,9 @@ fun PandoraDeviceDto.toUiModel(): AlarmDeviceUiModel =
 data class PandoraDeviceDataDto(
     @param:Json(name = "fuel") val fuelTank: Int,
     @param:Json(name = "voltage") val voltage: Double,
-    @param:Json(name = "engine_temp") val engineTemp: Int,
-    @param:Json(name = "out_temp") val outTemp: Int,
-    @param:Json(name = "cabin_temp") val cabinTemp: Int,
+    @param:Json(name = "engine_temp") val engineTemp: Double,
+    @param:Json(name = "out_temp") val outTemp: Double,
+    @param:Json(name = "cabin_temp") val cabinTemp: Double,
     @param:Json(name = "engine_rpm") val engineRpm: Int,
     @param:Json(name = "x") val x: Double,
     @param:Json(name = "y") val y: Double,
