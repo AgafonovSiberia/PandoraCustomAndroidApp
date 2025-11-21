@@ -113,12 +113,10 @@ class WearPhoneGateway(
             val json = statusRequestAdapter.toJson(payload)
             val bytes = json.toByteArray(StandardCharsets.UTF_8)
 
-            // Отправляем запрос
             messageClient
                 .sendMessage(nodeId, PhoneMessagePath.STATUS_GET, bytes)
                 .await()
 
-            // Ждём ответ с тайм-аутом
             val response = try {
                 withTimeout(timeoutMillis) {
                     deferred.await()
@@ -139,7 +137,7 @@ class WearPhoneGateway(
         }
     }
 
-    override suspend fun sendCommand(command: PandoraCommand): Result<WatchPandoraStatus> {
+    override suspend fun sendCommand(command: PandoraCommand, alarmDeviceId: Int): Result<WatchPandoraStatus> {
         return runCatching {
             val nodeId = getOrResolvePhoneNodeId()
                 ?: throw IllegalStateException("Телефон не найден (нет подключённых узлов)")
@@ -149,6 +147,7 @@ class WearPhoneGateway(
             pendingCommandRequests[requestId] = deferred
 
             val payload = CommandRequestPayload(
+                alarmDeviceId = alarmDeviceId,
                 protocolVersion = PhoneMessagePath.PROTOCOL_VERSION,
                 requestId = requestId,
                 action = when (command) {
@@ -201,11 +200,9 @@ class WearPhoneGateway(
     }
 }
 
-/**
- * Маппинг DTO -> доменная модель WatchPandoraStatus
- */
 private fun StatusDto.toDomain(): WatchPandoraStatus {
     return WatchPandoraStatus(
+        alarmDeviceId = alarmDeviceId,
         isReady = isReady,
         carName = carName,
         temperature = temperature?.toFloat(),

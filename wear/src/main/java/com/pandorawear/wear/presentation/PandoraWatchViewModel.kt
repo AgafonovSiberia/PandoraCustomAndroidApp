@@ -23,9 +23,6 @@ class PandoraWatchViewModel(
     private var pollingJob: Job? = null
     private var lastKnownStatus: WatchPandoraStatus? = null
 
-    /**
-     * Вызывается, когда экран становится активным (например, в onResume).
-     */
     fun start() {
         if (pollingJob != null) return
 
@@ -37,17 +34,11 @@ class PandoraWatchViewModel(
         }
     }
 
-    /**
-     * Вызывается, когда экран уходит из фокуса (например, в onPause).
-     */
     fun stop() {
         pollingJob?.cancel()
         pollingJob = null
     }
 
-    /**
-     * Одноразовый запрос статуса. Можно дёрнуть вручную (pull-to-refresh) или в цикле.
-     */
     fun refreshStatus() {
         viewModelScope.launch {
             refreshStatusOnce()
@@ -56,7 +47,6 @@ class PandoraWatchViewModel(
 
     private suspend fun refreshStatusOnce() {
         if (_uiState.value is PandoraWatchUiState.Loading) {
-            // показываем лоадер первый раз
             _uiState.value = PandoraWatchUiState.Loading
         }
 
@@ -86,12 +76,14 @@ class PandoraWatchViewModel(
     fun onCommandClicked(command: PandoraCommand) {
         val currentState = _uiState.value
         if (currentState !is PandoraWatchUiState.Ready) {
-            // В неготовом состоянии команды не шлём
             return
         }
 
+        val currentStatus = currentState.status
+        val alarmDeviceId = currentStatus.alarmDeviceId?: return
+
         viewModelScope.launch {
-            val result = phoneGateway.sendCommand(command)
+            val result = phoneGateway.sendCommand(command = command, alarmDeviceId = alarmDeviceId)
 
             result
                 .onSuccess { status ->

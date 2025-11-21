@@ -11,7 +11,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.pandorawear.wear"
+        applicationId = "com.pandorawear.customapi"
         minSdk = 30
         targetSdk = 36
         versionCode = 1

@@ -127,8 +127,6 @@ class WearBridgeService : WearableListenerService() {
         return client
     }
 
-    // ===== STATUS =====
-
     private suspend fun handleStatusRequest(nodeId: String, data: ByteArray) {
         val json = data.decodeToString()
 
@@ -365,8 +363,6 @@ class WearBridgeService : WearableListenerService() {
         val json = commandResponseAdapter.toJson(payload)
         sendMessage(nodeId, WearBridgePaths.COMMAND_RESPONSE, json)
     }
-
-    // ===== LOW-LEVEL SEND =====
 
     private fun sendMessage(
         nodeId: String,

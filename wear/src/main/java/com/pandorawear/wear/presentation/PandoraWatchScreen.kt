@@ -62,11 +62,11 @@ private fun NotReadyScreen(message: String?) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Icon(
-            imageVector = Icons.Filled.Warning,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-        )
+//        Icon(
+//            imageVector = Icons.Filled.Warning,
+//            contentDescription = null,
+//            tint = MaterialTheme.colorScheme.primary,
+//        )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = message ?: "Настройте приложение на телефоне",
@@ -84,11 +84,11 @@ private fun ErrorScreen(message: String) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Icon(
-            imageVector = Icons.Filled.Warning,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.error,
-        )
+//        Icon(
+//            imageVector = Icons.Filled.Warning,
+//            contentDescription = null,
+//            tint = MaterialTheme.colorScheme.error,
+//        )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = message,
@@ -141,10 +141,10 @@ private fun ReadyScreen(
         Button(
             onClick = if (engineRunning) onStopClick else onStartClick,
         ) {
-            Icon(
-                imageVector = Icons.Filled.Refresh,
-                contentDescription = null,
-            )
+//            Icon(
+//                imageVector = Icons.Filled.Refresh,
+//                contentDescription = null,
+//            )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = if (engineRunning) "Стоп" else "Старт",

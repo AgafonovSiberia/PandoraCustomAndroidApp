@@ -11,7 +11,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.pandorawear.mobile"
+        applicationId = "com.pandorawear.customapi"
         minSdk = 31
         targetSdk = 36
         versionCode = 1
@@ -68,5 +68,6 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.play.services.wearable)
+    implementation(libs.play.services.wearable.v1820)
 
 }
