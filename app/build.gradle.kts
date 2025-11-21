@@ -21,13 +21,12 @@ android {
     }
     signingConfigs {
         create("release") {
-            storeFile = file(System.getProperty("PANDORA_KEYSTORE_PATH"))
-            storePassword = System.getProperty("PANDORA_STORE_PASSWORD")
-            keyAlias = System.getProperty("PANDORA_KEY_ALIAS")
-            keyPassword = System.getProperty("PANDORA_KEY_PASSWORD")
+            storeFile = file(project.findProperty("PANDORA_KEYSTORE_PATH") as String)
+            storePassword = project.findProperty("PANDORA_KEY_PASSWORD") as String
+            keyAlias = project.findProperty("PANDORA_KEY_ALIAS") as String
+            keyPassword = project.findProperty("PANDORA_STORE_PASSWORD") as String
         }
     }
-
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
