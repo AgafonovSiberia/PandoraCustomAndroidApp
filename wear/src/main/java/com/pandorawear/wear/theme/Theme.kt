@@ -24,13 +24,13 @@ private val DarkColorScheme = darkColorScheme(
     secondary = BlueSecondary,
     onSecondary = Color.White,
 
-    background = BackgroundDark,
+    background = SurfaceDark,
     onBackground = TextPrimary,
 
     surface = SurfaceDark,
     onSurface = TextPrimary,
 
-    surfaceVariant = SurfaceDarkLow,
+    surfaceVariant = SurfaceDark,
     onSurfaceVariant = TextSecondary,
 
     error = ErrorRed,

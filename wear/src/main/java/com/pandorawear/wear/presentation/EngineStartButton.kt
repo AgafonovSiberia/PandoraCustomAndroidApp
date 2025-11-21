@@ -33,26 +33,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.dp
 
-@Composable
-fun EngineStartBar(
-    isEngineOn: Boolean,
-    onConfirmed: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .padding(bottom = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        Spacer(Modifier.height(12.dp))
-
-        EngineStartButton(
-            isEngineOn = isEngineOn,
-            onLongPressOverOneSecond = onConfirmed
-        )
-    }
-}
 
 @Composable
 fun EngineStartButton(
@@ -66,10 +46,12 @@ fun EngineStartButton(
     var progress by remember { mutableStateOf(0f) }
     var flashTrigger by remember { mutableStateOf(0) }
 
+
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 1.1f else 1f,
-        label = "engine_start_scale"
+        label = "engine_start_scale",
     )
+
 
     val flashProgress = remember { Animatable(0f) }
 
@@ -78,12 +60,12 @@ fun EngineStartButton(
             flashProgress.snapTo(0f)
             flashProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = 250)
+                animationSpec = tween(durationMillis = 250),
             )
         }
     }
 
-    // логика удержания
+
     LaunchedEffect(isPressed) {
         if (isPressed) {
             val start = System.currentTimeMillis()
@@ -99,16 +81,12 @@ fun EngineStartButton(
                 }
 
                 if (elapsed >= 1000L) {
-                    // 1) виброотклик
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
 
-                    // 2) коллбек
                     onLongPressOverOneSecond()
 
-                    // 3) вспышка
                     flashTrigger++
 
-                    // 4) сброс состояния
                     isPressed = false
                     progress = 0f
                     break
@@ -121,17 +99,19 @@ fun EngineStartButton(
         }
     }
 
+
     Box(
-        modifier = modifier.size(96.dp),
-        contentAlignment = Alignment.Center
+        modifier = modifier.size(72.dp),
+        contentAlignment = Alignment.Center,
     ) {
         val flashAlpha = (1f - flashProgress.value) * 0.25f
         val flashScale = 1f + flashProgress.value * 1.2f
 
+        // Вспышка (кольцо вокруг кнопки)
         if (flashAlpha > 0.01f) {
             Box(
                 modifier = Modifier
-                    .size(80.dp)
+                    .size(60.dp)
                     .graphicsLayer {
                         alpha = flashAlpha
                         scaleX = flashScale
@@ -142,11 +122,12 @@ fun EngineStartButton(
                         if (isEngineOn)
                             MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
                         else
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
                     )
             )
         }
 
+        // Круговой прогресс (status bar по контуру)
         if (progress > 0f) {
             CircularProgressIndicator(
                 progress = { progress },
@@ -155,23 +136,24 @@ fun EngineStartButton(
                     MaterialTheme.colorScheme.error
                 else
                     MaterialTheme.colorScheme.primary,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             )
         }
 
+        // Основной круг кнопки
         Box(
             modifier = Modifier
-                .size(80.dp)
+                .size(60.dp)
                 .graphicsLayer(
                     scaleX = scale,
-                    scaleY = scale
+                    scaleY = scale,
                 )
                 .clip(CircleShape)
                 .background(
                     if (isEngineOn)
                         MaterialTheme.colorScheme.errorContainer
                     else
-                        MaterialTheme.colorScheme.primaryContainer
+                        MaterialTheme.colorScheme.primaryContainer,
                 )
                 .pointerInput(Unit) {
                     detectTapGestures(
@@ -182,13 +164,13 @@ fun EngineStartButton(
                         }
                     )
                 },
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = Icons.Outlined.AcUnit,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(28.dp),
             )
         }
     }
