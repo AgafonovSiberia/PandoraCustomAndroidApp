@@ -8,12 +8,13 @@ import androidx.activity.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.pandorawear.wear.theme.WearTheme
 
 import com.pandorawear.wear.phone.PhoneGateway
 import com.pandorawear.wear.phone.WearPhoneGateway
 import com.pandorawear.wear.presentation.PandoraWatchScreen
 import com.pandorawear.wear.presentation.PandoraWatchViewModel
-import com.pandorawear.wear.theme.PandoraWearTheme
+
 
 class MainWear : ComponentActivity() {
 
@@ -28,7 +29,7 @@ class MainWear : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            PandoraWearTheme {
+            WearTheme {
                 PandoraWatchScreen(viewModel = viewModel)
             }
         }

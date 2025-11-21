@@ -1,4 +1,4 @@
-package com.pandorawear.wear.theme
+package com.pandorawear.mobile.theme
 
 import androidx.compose.ui.graphics.Color
 
