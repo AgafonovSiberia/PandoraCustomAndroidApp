@@ -21,6 +21,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -44,7 +45,7 @@ fun PandoraWatchScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
     ) {
         when (val state = uiState) {
             is PandoraWatchUiState.Loading -> LoadingScreen()
@@ -69,13 +70,13 @@ private fun StatusChip(
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+        modifier = modifier
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center,
     ) {
         Row(
-            modifier = Modifier
-                .padding(horizontal = 10.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
@@ -183,8 +184,6 @@ private fun ReadyScreen(
                 tint = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.size(50.dp),
             )
-
-//            Spacer(modifier = Modifier.height(1.dp))
 
             Text(
                 text = status.name ?: "Pandora",

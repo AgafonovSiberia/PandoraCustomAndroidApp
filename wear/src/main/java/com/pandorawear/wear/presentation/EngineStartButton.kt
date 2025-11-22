@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -43,12 +44,12 @@ fun EngineStartButton(
     var progress by remember { mutableStateOf(0f) }
     var flashTrigger by remember { mutableStateOf(0) }
 
+    val buttonSize = 50.dp
 
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 1.1f else 1f,
         label = "engine_start_scale",
     )
-
 
     val flashProgress = remember { Animatable(0f) }
 
@@ -61,7 +62,6 @@ fun EngineStartButton(
             )
         }
     }
-
 
     LaunchedEffect(isPressed) {
         if (isPressed) {
@@ -77,13 +77,10 @@ fun EngineStartButton(
                     break
                 }
 
-                if (elapsed >= 1000L) {
+                if (elapsed >= 2000L) {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-
                     onLongPressOverOneSecond()
-
                     flashTrigger++
-
                     isPressed = false
                     progress = 0f
                     break
@@ -96,18 +93,34 @@ fun EngineStartButton(
         }
     }
 
-
     Box(
-        modifier = modifier.size(72.dp),
+        modifier = modifier.size(70.dp),
         contentAlignment = Alignment.Center,
     ) {
+        if (progress > 0f) {
+            CircularProgressIndicator(
+                progress = { progress },
+                modifier = Modifier.size(70.dp),
+                strokeWidth = 8.dp,
+                colors = ProgressIndicatorDefaults.colors(
+                    indicatorColor = if (isEngineOn) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    },
+                    trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                ),
+            )
+        }
+
+        // 2) Поверх — флеш
         val flashAlpha = (1f - flashProgress.value) * 0.25f
         val flashScale = 1f + flashProgress.value * 1.2f
 
         if (flashAlpha > 0.01f) {
             Box(
                 modifier = Modifier
-                    .size(60.dp)
+                    .size(buttonSize)
                     .graphicsLayer {
                         alpha = flashAlpha
                         scaleX = flashScale
@@ -123,25 +136,10 @@ fun EngineStartButton(
             )
         }
 
-        if (progress > 0f) {
-            CircularProgressIndicator(
-                progress = { progress },
-                modifier = Modifier.fillMaxSize(),
-                strokeWidth = 6.dp,
-                colors = ProgressIndicatorDefaults.colors(
-                    indicatorColor = if (isEngineOn) {
-                        MaterialTheme.colorScheme.error
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    },
-                    trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
-                ),
-            )
-        }
-
+        // 3) И в самом верху — кнопка
         Box(
             modifier = Modifier
-                .size(60.dp)
+                .size(buttonSize)
                 .graphicsLayer(
                     scaleX = scale,
                     scaleY = scale,
@@ -164,7 +162,6 @@ fun EngineStartButton(
                 },
             contentAlignment = Alignment.Center,
         ) {
-
             Icon(
                 painter = if (isEngineOn)
                     painterResource(R.drawable.engine_stop_fan_512_vector)

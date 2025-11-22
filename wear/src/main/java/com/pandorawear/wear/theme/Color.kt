@@ -8,6 +8,8 @@ val BlueSecondary = Color(0xFF6A8DF3)
 
 val BackgroundDark = Color(0xFF2b2a28)
 val SurfaceDark = Color(0xFF212121)
+
+val SurfaceDarkHigh = Color(0xFF262626)
 val SurfaceDarkLow = Color(0xFF212121)
 
 val TextPrimary = Color(0xFFEAEAEA)
