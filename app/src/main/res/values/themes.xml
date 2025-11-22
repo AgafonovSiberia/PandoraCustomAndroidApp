@@ -4,7 +4,7 @@
     <style name="Theme.PandoraWear" parent="android:Theme.Material.Light.NoActionBar" />
 
     <style name="Theme.PandoraWear.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@drawable/ic_launcher_background</item>
+<!--        <item name="windowSplashScreenBackground">@drawable/ic_launcher_background</item>-->
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher</item>
         <item name="windowSplashScreenAnimationDuration">300</item>
         <item name="postSplashScreenTheme">@style/Theme.PandoraWear</item>
