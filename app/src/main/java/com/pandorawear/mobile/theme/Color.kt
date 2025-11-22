@@ -2,7 +2,6 @@ package com.pandorawear.mobile.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Основной акцент — как в веб-админке
 val BluePrimary = Color(0xFF3A6CE1)
 val BluePrimaryDark = Color(0xFF2E54B8)
 val BlueSecondary = Color(0xFF6A8DF3)

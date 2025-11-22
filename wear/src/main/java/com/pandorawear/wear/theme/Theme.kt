@@ -1,36 +1,25 @@
 package com.pandorawear.wear.theme
 
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import com.pandorawear.mobile.theme.BackgroundDark
-import com.pandorawear.mobile.theme.BluePrimary
-import com.pandorawear.mobile.theme.BluePrimaryDark
-import com.pandorawear.mobile.theme.BlueSecondary
-import com.pandorawear.mobile.theme.ErrorRed
-import com.pandorawear.mobile.theme.SurfaceDark
-import com.pandorawear.mobile.theme.SurfaceDarkLow
-import com.pandorawear.mobile.theme.TextPrimary
-import com.pandorawear.mobile.theme.TextSecondary
+import androidx.wear.compose.material3.ColorScheme
+import androidx.wear.compose.material3.MaterialTheme
 
-private val DarkColorScheme = darkColorScheme(
+private val DarkColorScheme = ColorScheme().copy(
     primary = BluePrimary,
     onPrimary = Color.White,
-
-    primaryContainer = BluePrimaryDark,
-    onPrimaryContainer = Color.White,
 
     secondary = BlueSecondary,
     onSecondary = Color.White,
 
-    background = SurfaceDark,
+    background = BackgroundDark,
     onBackground = TextPrimary,
 
-    surface = SurfaceDark,
-    onSurface = TextPrimary,
+    surfaceContainerLow = SurfaceDark,
+    surfaceContainer = SurfaceDark,
+    surfaceContainerHigh = SurfaceDark,
 
-    surfaceVariant = SurfaceDark,
+    onSurface = TextPrimary,
     onSurfaceVariant = TextSecondary,
 
     error = ErrorRed,
@@ -40,8 +29,8 @@ private val DarkColorScheme = darkColorScheme(
 @Composable
 fun WearTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = DarkColorScheme,
         typography = Typography,
+        colorScheme = DarkColorScheme,
         content = content
     )
 }

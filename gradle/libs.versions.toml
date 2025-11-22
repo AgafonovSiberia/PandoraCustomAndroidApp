@@ -31,6 +31,7 @@ foundation = "1.9.4"
 ui = "1.9.4"
 composeMaterial3 = "1.5.5"
 uiVersion = "1.9.5"
+material3 = "1.4.0"
 
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
@@ -71,6 +72,7 @@ compose-material3 = { group = "androidx.wear.compose", name = "compose-material3
 play-services-wearable-v1820 = { module = "com.google.android.gms:play-services-wearable", version.ref = "playServicesWearableVersion" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 ui = { group = "androidx.compose.ui", name = "ui", version.ref = "uiVersion" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

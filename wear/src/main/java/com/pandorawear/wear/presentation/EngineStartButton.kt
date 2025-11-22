@@ -6,18 +6,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AcUnit
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.wear.compose.material3.CircularProgressIndicator
+import androidx.wear.compose.material3.Icon
+import androidx.wear.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,6 +27,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.wear.compose.material3.ProgressIndicatorDefaults
 import com.pandorawear.wear.R
 
 
@@ -109,7 +104,6 @@ fun EngineStartButton(
         val flashAlpha = (1f - flashProgress.value) * 0.25f
         val flashScale = 1f + flashProgress.value * 1.2f
 
-        // Вспышка (кольцо вокруг кнопки)
         if (flashAlpha > 0.01f) {
             Box(
                 modifier = Modifier
@@ -132,16 +126,19 @@ fun EngineStartButton(
         if (progress > 0f) {
             CircularProgressIndicator(
                 progress = { progress },
-                strokeWidth = 4.dp,
-                color = if (isEngineOn)
-                    MaterialTheme.colorScheme.error
-                else
-                    MaterialTheme.colorScheme.primary,
                 modifier = Modifier.fillMaxSize(),
+                strokeWidth = 6.dp,
+                colors = ProgressIndicatorDefaults.colors(
+                    indicatorColor = if (isEngineOn) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    },
+                    trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                ),
             )
         }
 
-        // Основной круг кнопки
         Box(
             modifier = Modifier
                 .size(60.dp)
@@ -175,7 +172,7 @@ fun EngineStartButton(
                     painterResource(R.drawable.engine_start_fan_512_vector),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(28.dp),
+                modifier = Modifier.size(38.dp),
             )
         }
     }
