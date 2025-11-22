@@ -82,7 +82,6 @@ private fun BottomDockBar(
                 tonalElevation = 0.dp,
             ) {
 
-                // Pandora (видна всегда, но может быть disabled)
                 NavigationBarItem(
                     selected = selectedTab == MainTab.PANDORA,
                     onClick = { onTabSelected(MainTab.PANDORA) },
@@ -102,7 +101,6 @@ private fun BottomDockBar(
                     ),
                 )
 
-                // Pairing
                 NavigationBarItem(
                     selected = selectedTab == MainTab.PAIRING,
                     onClick = { onTabSelected(MainTab.PAIRING) },
@@ -124,7 +122,6 @@ private fun BottomDockBar(
 
 
 
-                // Settings – всегда доступны
                 NavigationBarItem(
                     selected = selectedTab == MainTab.SETTINGS,
                     onClick = { onTabSelected(MainTab.SETTINGS) },
@@ -166,47 +163,62 @@ fun AppRoot(
     var host by remember { mutableStateOf(initialConfig?.host ?: "") }
     var port by remember { mutableStateOf(initialConfig?.port ?: "") }
 
-    var backendReady by remember { mutableStateOf(false) }
     var hasDevice by remember { mutableStateOf(initialHasDevice) }
 
     var appState by remember { mutableStateOf(AppState.BACKEND_UNAVAILABLE) }
-
     var selectedTab by remember { mutableStateOf(MainTab.SETTINGS) }
 
+    var backendApiClient by remember { mutableStateOf<BackendApiClient?>(null) }
 
     LaunchedEffect(host, port, hasDevice) {
         if (host.isBlank()) {
-            backendReady = false
+            backendApiClient = null
             appState = AppState.BACKEND_UNAVAILABLE
             selectedTab = MainTab.SETTINGS
-        } else {
-            val ok = BackendHealthChecker.isBackendReady(host, port)
-            backendReady = ok
-
-            appState = when {
-                !ok -> AppState.BACKEND_UNAVAILABLE
-                ok && !hasDevice -> AppState.BACKEND_AVAILABLE_NO_DEVICE
-                else -> AppState.BACKEND_READY_WITH_DEVICE
-            }
-
-            selectedTab = when (appState) {
-                AppState.BACKEND_UNAVAILABLE          -> MainTab.SETTINGS
-                AppState.BACKEND_AVAILABLE_NO_DEVICE  -> MainTab.PAIRING
-                AppState.BACKEND_READY_WITH_DEVICE    -> MainTab.PANDORA
-            }
+            return@LaunchedEffect
         }
-    }
 
-    val backendApiClient: BackendApiClient? = remember(host, port, backendReady) {
-        if (!backendReady || host.isBlank()) null
-        else {
-            val rawBase = if (port.isNotBlank()) "${host.trim()}:${port.trim()}" else host.trim()
-            runCatching {
-                BackendApiClientFactory.create(
-                    baseUrl = rawBase,
-                    credentialsStorage = deviceCredentialsStorage
-                )
-            }.getOrNull()
+        val ok = BackendHealthChecker.isBackendReady(host, port)
+
+        if (!ok) {
+            backendApiClient = null
+            appState = AppState.BACKEND_UNAVAILABLE
+            selectedTab = MainTab.SETTINGS
+            return@LaunchedEffect
+        }
+
+        val rawBase = if (port.isNotBlank()) {
+            "${host.trim()}:${port.trim()}"
+        } else {
+            host.trim()
+        }
+
+        val client = runCatching {
+            BackendApiClientFactory.create(
+                baseUrl = rawBase,
+                credentialsStorage = deviceCredentialsStorage,
+            )
+        }.getOrNull()
+
+        if (client == null) {
+            backendApiClient = null
+            appState = AppState.BACKEND_UNAVAILABLE
+            selectedTab = MainTab.SETTINGS
+            return@LaunchedEffect
+        }
+
+        backendApiClient = client
+
+        appState = if (hasDevice) {
+            AppState.BACKEND_READY_WITH_DEVICE
+        } else {
+            AppState.BACKEND_AVAILABLE_NO_DEVICE
+        }
+
+        selectedTab = when (appState) {
+            AppState.BACKEND_UNAVAILABLE          -> MainTab.SETTINGS
+            AppState.BACKEND_AVAILABLE_NO_DEVICE  -> MainTab.PAIRING
+            AppState.BACKEND_READY_WITH_DEVICE    -> MainTab.PANDORA
         }
     }
 
@@ -237,7 +249,7 @@ fun AppRoot(
                 SettingsScreen(
                     currentHost = host,
                     currentPort = port,
-                    backendReady = backendReady,
+                    backendReady = backendApiClient != null,
                     onConfigChanged = { newHost, newPort ->
                         host = newHost
                         port = newPort
@@ -249,7 +261,6 @@ fun AppRoot(
                     },
                     onCheckBackend = { h, p ->
                         val ok = BackendHealthChecker.isBackendReady(h, p)
-                        backendReady = ok
                         ok
                     },
                     modifier = Modifier.padding(padding),
@@ -278,4 +289,3 @@ fun AppRoot(
         }
     }
 }
-

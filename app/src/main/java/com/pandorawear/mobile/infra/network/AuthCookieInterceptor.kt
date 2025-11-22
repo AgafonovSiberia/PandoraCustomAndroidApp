@@ -1,5 +1,6 @@
 package com.pandorawear.mobile.infra.network
 
+import com.pandorawear.mobile.infra.session.SessionEvents
 import com.pandorawear.mobile.infra.storage.DeviceCredentialsStorage
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -14,17 +15,29 @@ class AuthCookieInterceptor(
         val path = url.encodedPath
 
         val isPairingRequest = path.startsWith("/api/devices/pairing")
-        if (isPairingRequest) {
-            return chain.proceed(original)
+
+        // 1. Подготавливаем запрос (с токеном, если он есть)
+        val request = if (isPairingRequest) {
+            original
+        } else {
+            val credentials = credentialsStorage.load()
+            if (credentials != null) {
+                original.newBuilder()
+                    .header("Authorization", "Bearer ${credentials.token}")
+                    .header("Cookie", "device_id=${credentials.deviceId}")
+                    .build()
+            } else {
+                original
+            }
         }
 
-        val creds = credentialsStorage.load() ?: return chain.proceed(original)
+        val response = chain.proceed(request)
 
-        val newRequest = original.newBuilder()
-            .header("Authorization", "Bearer ${creds.token}")
-            .header("Cookie", "device_id=${creds.deviceId}")
-            .build()
+        if (response.code == 401) {
+            credentialsStorage.clear()
+            SessionEvents.notifyUnauthorized()
+        }
 
-        return chain.proceed(newRequest)
+        return response
     }
 }
