@@ -119,7 +119,6 @@ class WearBridgeService : WearableListenerService() {
         val baseUrl = BackendUrls.baseUrl(config.host, config.port)
         val client = BackendApiClientFactory.create(
             baseUrl = baseUrl,
-            isDebug = true,
             credentialsStorage = deviceCredentialsStorage,
         )
         backendApiClient = client

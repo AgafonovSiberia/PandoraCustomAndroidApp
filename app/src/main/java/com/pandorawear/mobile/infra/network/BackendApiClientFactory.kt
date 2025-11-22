@@ -15,7 +15,6 @@ object BackendApiClientFactory {
 
     fun create(
         baseUrl: String,
-        isDebug: Boolean = true,
         credentialsStorage: DeviceCredentialsStorage,
     ): BackendApiClient {
         val moshi = Moshi.Builder()
@@ -23,12 +22,9 @@ object BackendApiClientFactory {
             .build()
 
         val logging = HttpLoggingInterceptor().apply {
-            level = if (isDebug) {
-                HttpLoggingInterceptor.Level.BODY
-            } else {
-                HttpLoggingInterceptor.Level.NONE
-            }
+            HttpLoggingInterceptor.Level.BODY
         }
+
 
         val okHttpClient = OkHttpClient.Builder()
             .addInterceptor(logging)

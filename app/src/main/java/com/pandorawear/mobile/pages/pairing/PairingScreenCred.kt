@@ -58,7 +58,7 @@ fun PairingByEmailForm(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Используйте email и пароль пользователя, зарегистрированного в PandoraWear.",
+            text = "Используйте данные пользователя, зарегистрированного в PandoraCustomApiServer",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
         )
@@ -87,7 +87,7 @@ fun PairingByEmailForm(
                 successText = null
             },
             singleLine = true,
-            label = { Text("Пароль") },
+            label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
         )
@@ -110,8 +110,9 @@ fun PairingByEmailForm(
 
                     try {
                         val credentials = backendApiClient.pairDeviceByCred(
-                            email.trim(),
-                            password
+                            email = email.trim(),
+                            password = password,
+                            deviceName = android.os.Build.MODEL
                         )
                         credentialsStorage.save(credentials)
                         successText = "Устройство успешно сопряжено"
@@ -119,7 +120,7 @@ fun PairingByEmailForm(
                     } catch (e: Exception) {
                         Log.e(TAG, "pairByEmail failed", e)
                         errorText =
-                            "Не удалось выполнить сопряжение по email. Проверьте данные и повторите."
+                            "Не удалось выполнить сопряжение. Проверьте данные и повторите."
                     } finally {
                         isLoading = false
                     }

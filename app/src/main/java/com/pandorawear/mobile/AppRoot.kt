@@ -190,9 +190,9 @@ fun AppRoot(
             }
 
             selectedTab = when (appState) {
-                AppState.BACKEND_UNAVAILABLE          -> MainTab.SETTINGS    // правило 1
-                AppState.BACKEND_AVAILABLE_NO_DEVICE  -> MainTab.PAIRING     // правило 2.2
-                AppState.BACKEND_READY_WITH_DEVICE    -> MainTab.PANDORA     // правило 2.1
+                AppState.BACKEND_UNAVAILABLE          -> MainTab.SETTINGS
+                AppState.BACKEND_AVAILABLE_NO_DEVICE  -> MainTab.PAIRING
+                AppState.BACKEND_READY_WITH_DEVICE    -> MainTab.PANDORA
             }
         }
     }
@@ -204,7 +204,6 @@ fun AppRoot(
             runCatching {
                 BackendApiClientFactory.create(
                     baseUrl = rawBase,
-                    isDebug = true,
                     credentialsStorage = deviceCredentialsStorage
                 )
             }.getOrNull()

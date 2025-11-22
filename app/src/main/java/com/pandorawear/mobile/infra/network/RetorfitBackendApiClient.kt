@@ -21,9 +21,13 @@ class RetrofitBackendApiClient(
         )
     }
 
-    override suspend fun pairDeviceByCred(email: String, password: String): DeviceCredentials {
+    override suspend fun pairDeviceByCred(
+        email: String,
+        password: String,
+        deviceName: String
+    ): DeviceCredentials {
         val resp = api.pairDeviceByCred(
-            CredPairRequestDto(email = email, password = password)
+            CredPairRequestDto(email = email, password = password, deviceName = deviceName)
         )
         return DeviceCredentials(deviceId = resp.deviceId, token = resp.token)
     }
