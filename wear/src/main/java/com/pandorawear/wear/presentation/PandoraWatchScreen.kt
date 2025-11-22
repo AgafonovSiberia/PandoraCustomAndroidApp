@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -65,7 +66,7 @@ fun PandoraWatchScreen(
 
 @Composable
 private fun StatusChip(
-    icon: ImageVector,
+    icon:  Painter,
     valueText: String,
     contentDescription: String,
     modifier: Modifier = Modifier,
@@ -81,7 +82,7 @@ private fun StatusChip(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                imageVector = icon,
+                painter = icon,
                 contentDescription = contentDescription,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(18.dp),
@@ -195,14 +196,14 @@ private fun ReadyScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 StatusChip(
-                    icon = Icons.Rounded.Thermostat,
+                    icon = painterResource(R.drawable.engine_temp_icon_512_vector),
                     valueText = status.engineTemp?.let { "${it}°" } ?: "--",
                     contentDescription = "Температура двигателя",
                     modifier = Modifier.weight(1f),
                 )
 
                 StatusChip(
-                    icon = Icons.Rounded.BatteryFull,
+                    icon = painterResource(R.drawable.battery_icon_512_vector),
                     valueText = status.batteryVoltage?.let { "${it}V" } ?: "--",
                     contentDescription = "Напряжение бортовой сети",
                     modifier = Modifier.weight(1f),

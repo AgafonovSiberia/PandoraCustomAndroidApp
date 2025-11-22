@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.pandorawear.mobile.infra.storage.*
 import com.pandorawear.mobile.theme.PandoraWearTheme
-
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -13,7 +13,11 @@ class MainActivity : ComponentActivity() {
     private lateinit var backendConfigStorage: BackendConfigStorage
     private lateinit var deviceCredentialsStorage: DeviceCredentialsStorage
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
+
         super.onCreate(savedInstanceState)
 
         backendConfigStorage = SharedPrefsBackendConfigStorage(applicationContext)

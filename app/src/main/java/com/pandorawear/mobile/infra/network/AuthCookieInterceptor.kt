@@ -16,7 +16,6 @@ class AuthCookieInterceptor(
 
         val isPairingRequest = path.startsWith("/api/devices/pairing")
 
-        // 1. Подготавливаем запрос (с токеном, если он есть)
         val request = if (isPairingRequest) {
             original
         } else {

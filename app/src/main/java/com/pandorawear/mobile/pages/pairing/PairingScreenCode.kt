@@ -57,7 +57,7 @@ fun PairingByCodeForm(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = "Введите код, который отображается в веб-админке PandoraWear.",
+            text = "Введите код из Pandora Custom API Server",
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
         )
@@ -82,7 +82,7 @@ fun PairingByCodeForm(
         Button(
             onClick = {
                 if (backendApiClient == null) {
-                    errorText = "Клиент backend-а недоступен"
+                    errorText = "Сервер недоступен"
                     return@Button
                 }
 
@@ -120,7 +120,7 @@ fun PairingByCodeForm(
                     strokeWidth = 2.dp,
                 )
             } else {
-                Text("Pair device by code")
+                Text("Сопряжение")
             }
         }
 

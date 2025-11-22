@@ -99,7 +99,7 @@ fun PairingByEmailForm(
         Button(
             onClick = {
                 if (backendApiClient == null) {
-                    errorText = "Клиент backend-а недоступен"
+                    errorText = "Сервер недоступен"
                     return@Button
                 }
 
@@ -141,7 +141,7 @@ fun PairingByEmailForm(
                     strokeWidth = 2.dp,
                 )
             } else {
-                Text("Сопрячь по email")
+                Text("Сопряжение")
             }
         }
 

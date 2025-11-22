@@ -1,6 +1,7 @@
 [versions]
 agp = "8.13.1"
 converterMoshi = "3.0.0"
+coreSplashscreenVersion = "1.0.1"
 kotlin = "2.2.21"
 coreKtx = "1.17.0"
 junit = "4.13.2"
@@ -29,10 +30,12 @@ coreSplashscreen = "1.2.0"
 foundation = "1.9.4"
 ui = "1.9.4"
 composeMaterial3 = "1.5.5"
+uiVersion = "1.9.5"
 
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-core-splashscreen-v101 = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreenVersion" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
 converter-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "converterMoshi" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -67,6 +70,7 @@ androidx-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
 compose-material3 = { group = "androidx.wear.compose", name = "compose-material3", version.ref = "composeMaterial3" }
 play-services-wearable-v1820 = { module = "com.google.android.gms:play-services-wearable", version.ref = "playServicesWearableVersion" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+ui = { group = "androidx.compose.ui", name = "ui", version.ref = "uiVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

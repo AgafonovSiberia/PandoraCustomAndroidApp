@@ -31,7 +31,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.pandorawear.wear.R
 
 
 @Composable
@@ -127,7 +129,6 @@ fun EngineStartButton(
             )
         }
 
-        // Круговой прогресс (status bar по контуру)
         if (progress > 0f) {
             CircularProgressIndicator(
                 progress = { progress },
@@ -166,8 +167,12 @@ fun EngineStartButton(
                 },
             contentAlignment = Alignment.Center,
         ) {
+
             Icon(
-                imageVector = Icons.Outlined.AcUnit,
+                painter = if (isEngineOn)
+                    painterResource(R.drawable.engine_stop_fan_512_vector)
+                else
+                    painterResource(R.drawable.engine_start_fan_512_vector),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.size(28.dp),

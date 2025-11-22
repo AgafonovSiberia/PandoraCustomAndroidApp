@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import com.pandorawear.mobile.AppState
 import com.pandorawear.mobile.infra.network.BackendApiClient
 import com.pandorawear.mobile.infra.storage.DeviceCredentialsStorage
+import kotlinx.coroutines.launch
 
 private enum class PairingMode {
     BY_CODE,
@@ -24,6 +25,7 @@ fun PairingScreen(
     backendApiClient: BackendApiClient?,
     credentialsStorage: DeviceCredentialsStorage,
     onDevicePaired: () -> Unit,
+    onDeviceUnpaired: () -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -44,7 +46,9 @@ fun PairingScreen(
             }
             AppState.BACKEND_READY_WITH_DEVICE -> {
                 DeviceAlreadyPairedState(
-                    credentialsStorage = credentialsStorage
+                    backendApiClient = backendApiClient,
+                    credentialsStorage = credentialsStorage,
+                    onDeviceUnpaired = onDeviceUnpaired,
                 )
             }
         }
@@ -57,7 +61,7 @@ private fun PairingModesContainer(
     credentialsStorage: DeviceCredentialsStorage,
     onDevicePaired: () -> Unit,
 ) {
-    var mode by remember { mutableStateOf(PairingMode.BY_CODE) }
+    var mode by remember { mutableStateOf(PairingMode.BY_EMAIL) }
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color.Transparent,
@@ -70,10 +74,10 @@ private fun PairingModesContainer(
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
-            val tabs = listOf("По коду", "По email")
+            val tabs = listOf( "По email", "По коду")
             val selectedIndex = when (mode) {
-                PairingMode.BY_CODE -> 0
-                PairingMode.BY_EMAIL -> 1
+                PairingMode.BY_EMAIL -> 0
+                PairingMode.BY_CODE -> 1
             }
 
             TabRow(
@@ -92,8 +96,8 @@ private fun PairingModesContainer(
                         selected = selectedIndex == index,
                         onClick = {
                             mode = when (index) {
-                                0 -> PairingMode.BY_CODE
-                                else -> PairingMode.BY_EMAIL
+                                0 -> PairingMode.BY_EMAIL
+                                else -> PairingMode.BY_CODE
                             }
                         },
                         text = { Text(title) }
@@ -104,16 +108,16 @@ private fun PairingModesContainer(
             Spacer(modifier = Modifier.height(24.dp))
 
             when (mode) {
-                PairingMode.BY_CODE -> {
-                    PairingByCodeForm(
+                PairingMode.BY_EMAIL -> {
+                    PairingByEmailForm(
                         backendApiClient = backendApiClient,
                         credentialsStorage = credentialsStorage,
                         onDevicePaired = onDevicePaired,
                     )
                 }
 
-                PairingMode.BY_EMAIL -> {
-                    PairingByEmailForm(
+                PairingMode.BY_CODE -> {
+                    PairingByCodeForm(
                         backendApiClient = backendApiClient,
                         credentialsStorage = credentialsStorage,
                         onDevicePaired = onDevicePaired,
@@ -169,14 +173,21 @@ private fun NoBackendConfiguredState(
 
 @Composable
 private fun DeviceAlreadyPairedState(
+    backendApiClient: BackendApiClient?,
+    credentialsStorage: DeviceCredentialsStorage,
+    onDeviceUnpaired: () -> Unit,
     modifier: Modifier = Modifier,
-    credentialsStorage: DeviceCredentialsStorage
 ) {
     val credentials = credentialsStorage.load()
+    val scope = rememberCoroutineScope()
+
+    var showConfirm by remember { mutableStateOf(false) }
+    var isUnpairing by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
-
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -190,13 +201,95 @@ private fun DeviceAlreadyPairedState(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-
             Text(
                 text = "DeviceId: ${credentials?.deviceId}",
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center,
-                color = Color.Gray
+                color = Color.Gray,
             )
+
+            if (errorMessage != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = errorMessage!!,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            OutlinedButton(
+                onClick = { showConfirm = true },
+                enabled = !isUnpairing,
+            ) {
+                Text("Отвязать")
+            }
         }
+    }
+
+    if (showConfirm) {
+        AlertDialog(
+            onDismissRequest = {
+                if (!isUnpairing) {
+                    showConfirm = false
+                }
+            },
+            title = { Text("Отменить сопряжение") },
+            text = {
+                Text("Вы уверены, что хотите отменить сопряжение?")
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (isUnpairing) return@TextButton
+                        isUnpairing = true
+                        errorMessage = null
+
+                        scope.launch {
+                            val credentials = credentialsStorage.load()
+
+                            val result = runCatching {
+                                credentialsStorage.clear()
+
+                                if (backendApiClient == null) {
+                                    errorMessage = "Сервер недоступен"
+                                    return@runCatching
+                                }
+                                else {
+                                    backendApiClient.unpairDevice(credentials?.deviceId ?: return@runCatching)
+                                }
+
+                            }
+
+                            isUnpairing = false
+                            showConfirm = false
+
+                            if (result.isSuccess) {
+                                credentialsStorage.clear()
+                                onDeviceUnpaired()
+                            } else {
+                                errorMessage = result.exceptionOrNull()?.message
+                                    ?: "Не удалось отвязать устройство"
+                            }
+                        }
+                    }
+                ) {
+                    Text("Да")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        if (!isUnpairing) {
+                            showConfirm = false
+                        }
+                    }
+                ) {
+                    Text("Нет")
+                }
+            },
+        )
     }
 }

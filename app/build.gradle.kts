@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.foundation)
     implementation(libs.androidx.ui)
+    implementation(libs.ui)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -71,5 +72,6 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.play.services.wearable)
     implementation(libs.play.services.wearable.v1820)
+    implementation(libs.androidx.core.splashscreen.v101)
 
 }

@@ -1,15 +1,57 @@
 package com.pandorawear.mobile.pages.settings
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Cloud
+import androidx.compose.material.icons.outlined.CloudDone
+import androidx.compose.material.icons.outlined.CloudOff
+import androidx.compose.material.icons.outlined.Dns
+import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Save
+import androidx.compose.material.icons.outlined.Sync
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
+private enum class BackendStatus {
+    Unknown,
+    Checking,
+    Ok,
+    Error,
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -24,133 +66,276 @@ fun SettingsScreen(
     var host by remember { mutableStateOf(currentHost) }
     var port by remember { mutableStateOf(currentPort) }
 
-    var checkInProgress by remember { mutableStateOf(false) }
-    var checkResultText by remember { mutableStateOf<String?>(null) }
+    var savedHost by remember { mutableStateOf(currentHost) }
+    var savedPort by remember { mutableStateOf(currentPort) }
+
+    // Ошибка формата host (протокол)
+    var hostError by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(currentHost, currentPort) {
+        host = currentHost
+        port = currentPort
+        savedHost = currentHost
+        savedPort = currentPort
+        hostError = null
+    }
+
+    var backendStatus by remember {
+        mutableStateOf(
+            if (backendReady && currentHost.isNotBlank()) {
+                BackendStatus.Ok
+            } else {
+                BackendStatus.Unknown
+            }
+        )
+    }
+    var isChecking by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
 
+    fun validateHost(value: String): String? {
+        val trimmed = value.trim()
+        if (trimmed.isEmpty()) return null
+        return if (
+            trimmed.startsWith("http://") ||
+            trimmed.startsWith("https://")
+        ) {
+            null
+        } else {
+            "Адрес должен начинаться с http:// или https://"
+        }
+    }
+
+    LaunchedEffect(host, port) {
+        val trimmedHost = host.trim()
+        val trimmedPort = port.trim()
+
+        // если host пустой или явно невалиден — не проверяем backend
+        val validationError = validateHost(host)
+        hostError = validationError
+
+        if (trimmedHost.isBlank() || validationError != null) {
+            backendStatus = BackendStatus.Unknown
+            isChecking = false
+            return@LaunchedEffect
+        }
+
+        isChecking = true
+        backendStatus = BackendStatus.Checking
+
+        // debounce, чтобы не стрелять на каждый символ
+        delay(600)
+
+        val ok = try {
+            onCheckBackend(trimmedHost, trimmedPort)
+        } catch (_: Exception) {
+            false
+        }
+
+        isChecking = false
+        backendStatus = if (ok) BackendStatus.Ok else BackendStatus.Error
+    }
+
+    val trimmedHost = host.trim()
+    val trimmedPort = port.trim()
+    val hasChanges = trimmedHost != savedHost || trimmedPort != savedPort
+
+
+    val canSave = hasChanges &&
+            trimmedHost.isNotBlank() &&
+            hostError == null
+
     Surface(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         color = Color.Transparent,
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Top,
         ) {
-
-            Text(
-                text = "Настройки сервера",
-                style = MaterialTheme.typography.titleLarge,
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = host,
-                onValueChange = {
-                    host = it
-                    checkResultText = null
-                },
-                label = { Text("Host") },
-                placeholder = { Text("http://10.0.2.2 или https://api.example.com") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Next,
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = port,
-                onValueChange = {
-                    port = it
-                    checkResultText = null
-                },
-                label = { Text("Port") },
-                placeholder = { Text("8000 или пусто") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Done,
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.Transparent,
+                )
             ) {
-                Button(
-                    onClick = {
-                        val trimmedHost = host.trim()
-                        val trimmedPort = port.trim()
-                        onConfigChanged(trimmedHost, trimmedPort)
-                        checkResultText = "Сохранено, теперь можно проверить хост"
-                    },
-                    enabled = host.isNotBlank(),
-                    modifier = Modifier.weight(1f)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    Text("Сохранить")
-                }
+                    Text(
+                        text = "Подключение к серверу",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
 
-                Button(
-                    onClick = {
-                        scope.launch {
-                            checkInProgress = true
-                            checkResultText = null
+                    OutlinedTextField(
+                        value = host,
+                        onValueChange = { newValue ->
+                            host = newValue
+                            hostError = validateHost(newValue)
+                        },
+                        label = { Text("Адрес сервера") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Cloud,
+                                contentDescription = null,
+                            )
+                        },
+                        singleLine = true,
+                        isError = hostError != null,
+                        supportingText = {
+                            Text(
+                                text = hostError
+                                    ?: "Пример: https://api.example.com",
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Next,
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
 
-                            val trimmedHost = host.trim()
-                            val trimmedPort = port.trim()
+                    OutlinedTextField(
+                        value = port,
+                        onValueChange = { port = it },
+                        label = { Text("Порт") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Dns,
+                                contentDescription = null,
+                            )
+                        },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Done,
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
 
-                            val ok = onCheckBackend(trimmedHost, trimmedPort)
+                    // Строка статуса backend
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        val (statusIcon, statusColor, statusText) = when (backendStatus) {
+                            BackendStatus.Unknown -> Triple(
+                                Icons.Outlined.HelpOutline,
+                                MaterialTheme.colorScheme.outline,
+                                "Состояние неизвестно",
+                            )
 
-                            checkInProgress = false
-                            checkResultText = if (ok) {
-                                "Бэкенд отвечает 👍"
-                            } else {
-                                "Не удалось достучаться до /api/ready"
+                            BackendStatus.Checking -> Triple(
+                                Icons.Outlined.Sync,
+                                MaterialTheme.colorScheme.primary,
+                                "Проверяем соединение…",
+                            )
+
+                            BackendStatus.Ok -> Triple(
+                                Icons.Outlined.CloudDone,
+                                MaterialTheme.colorScheme.primary,
+                                "Бэкенд доступен",
+                            )
+
+                            BackendStatus.Error -> Triple(
+                                Icons.Outlined.CloudOff,
+                                MaterialTheme.colorScheme.error,
+                                "Бэкенд недоступен",
+                            )
+                        }
+
+                        Icon(
+                            imageVector = statusIcon,
+                            contentDescription = null,
+                            tint = statusColor,
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text(
+                            text = statusText,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = statusColor,
+                        )
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        when {
+                            isChecking -> {
+                                CircularProgressIndicator(
+                                    strokeWidth = 2.dp,
+                                    modifier = Modifier
+                                        .height(18.dp)
+                                        .width(18.dp),
+                                )
+                            }
+
+                            else -> {
+                                IconButton(
+                                    onClick = {
+                                        scope.launch {
+                                            val h = host.trim()
+                                            val p = port.trim()
+
+                                            val validationError = validateHost(host)
+                                            hostError = validationError
+
+                                            if (h.isBlank() || validationError != null) {
+                                                backendStatus = BackendStatus.Unknown
+                                                return@launch
+                                            }
+
+                                            isChecking = true
+                                            backendStatus = BackendStatus.Checking
+
+                                            val ok = try {
+                                                onCheckBackend(h, p)
+                                            } catch (_: Exception) {
+                                                false
+                                            }
+
+                                            isChecking = false
+                                            backendStatus =
+                                                if (ok) BackendStatus.Ok else BackendStatus.Error
+                                        }
+                                    },
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Refresh,
+                                        contentDescription = "Проверить соединение",
+                                    )
+                                }
                             }
                         }
-                    },
-                    enabled = host.isNotBlank() && !checkInProgress,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    if (checkInProgress) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.dp
+                    }
+
+                    // Кнопка сохранения — внутри блока настроек
+                    Button(
+                        onClick = {
+                            val h = host.trim()
+                            val p = port.trim()
+                            onConfigChanged(h, p)
+                            savedHost = h
+                            savedPort = p
+                        },
+                        enabled = canSave,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Save,
+                            contentDescription = null,
                         )
-                    } else {
-                        Text("Проверить хост")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Сохранить настройки")
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            if (checkResultText != null) {
-                Text(
-                    text = checkResultText ?: "",
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = if (backendReady) {
-                    "Состояние: бэкенд готов ✔"
-                } else {
-                    "Состояние: бэкенд не проверен / не доступен"
-                },
-                style = MaterialTheme.typography.bodySmall,
-            )
         }
     }
 }

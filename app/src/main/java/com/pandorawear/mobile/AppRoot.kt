@@ -41,7 +41,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.pandorawear.mobile.infra.session.SessionEvents
 import com.pandorawear.mobile.pages.pandora.PandoraScreen
+import com.pandorawear.mobile.theme.SurfaceDarkLow
 
 enum class MainTab {
     PANDORA,
@@ -69,7 +71,7 @@ private fun BottomDockBar(
                 clip = true,
             )
             .background(
-                color = SurfaceDark.copy(alpha = 0.85f),
+                color = SurfaceDarkLow.copy(alpha = 0.85f),
                 shape = RoundedCornerShape(24.dp),
             )
     ) {
@@ -222,6 +224,12 @@ fun AppRoot(
         }
     }
 
+    LaunchedEffect(Unit) {
+        SessionEvents.unauthorized.collect {
+            hasDevice = false
+        }
+    }
+
     val pairingEnabled   = appState != AppState.BACKEND_UNAVAILABLE
     val pandoraEnabled   = appState == AppState.BACKEND_READY_WITH_DEVICE
     val settingsEnabled  = true
@@ -274,6 +282,9 @@ fun AppRoot(
                     credentialsStorage = deviceCredentialsStorage,
                     onDevicePaired = {
                         hasDevice = true
+                    },
+                    onDeviceUnpaired = {
+                        hasDevice = false
                     },
                     onOpenSettings = { selectedTab = MainTab.SETTINGS },
                     modifier = Modifier.padding(padding),

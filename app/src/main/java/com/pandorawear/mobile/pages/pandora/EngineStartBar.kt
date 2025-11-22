@@ -7,12 +7,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AcUnit
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,8 +18,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
+import com.pandorawear.mobile.R
 
 @Composable
 fun EngineStartBar(
@@ -176,10 +174,13 @@ fun EngineStartButton(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Outlined.AcUnit,
+                painter = if (isEngineOn)
+                    painterResource(R.drawable.engine_stop_fan_512_vector)
+                else
+                    painterResource(R.drawable.engine_start_fan_512_vector),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(60.dp)
             )
         }
     }

@@ -3,7 +3,7 @@ package com.pandorawear.mobile.models
 import com.squareup.moshi.Json
 
 data class CredPairRequestDto(
-    @field:Json(name = "email") val email: String,
-    @field:Json(name = "password") val password: String,
-    @field:Json(name = "device_name") val deviceName: String,
+    @param:Json(name = "email") val email: String,
+    @param:Json(name = "password") val password: String,
+    @param:Json(name = "device_name") val deviceName: String,
 )

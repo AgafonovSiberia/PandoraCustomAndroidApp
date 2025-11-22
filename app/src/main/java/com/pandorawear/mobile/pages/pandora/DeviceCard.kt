@@ -17,11 +17,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.pandorawear.mobile.models.AlarmDeviceUiModel
+import com.pandorawear.mobile.R
 
 @Composable
 fun DeviceCard(
@@ -90,13 +93,13 @@ fun DeviceCard(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.DirectionsCar, // позже заменим на свою иконку
+                    painter = painterResource(R.drawable.freelander_vector),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier
+                        .size(450.dp)
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp)
-                        .height(120.dp)    // визуальная высота, будет казаться "во всю строку"
                 )
             }
 
@@ -109,20 +112,20 @@ fun DeviceCard(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                ParamIconColumn(
-                    icon = Icons.Outlined.BatteryStd,
+                ParamIconColumnCustom(
+                    painter = painterResource(R.drawable.battery_icon_512_vector),
                     value = "${device.batteryVoltage}В"
                 )
-                ParamIconColumn(
-                    icon = Icons.Outlined.LocalGasStation,
+                ParamIconColumnCustom(
+                    painter = painterResource(R.drawable.fuel_icon_512_vector),
                     value = "${device.fuelTank}"
                 )
-                ParamIconColumn(
-                    icon = Icons.Outlined.DeviceThermostat,
+                ParamIconColumnCustom(
+                    painter = painterResource(R.drawable.cabin_temp_icon_512_vector),
                     value = "${device.engineTemp}°"
                 )
-                ParamIconColumn(
-                    icon = Icons.Outlined.DeviceThermostat,
+                ParamIconColumnCustom(
+                    painter = painterResource(R.drawable.engine_temp_icon_512_vector),
                     value = "${device.cabinTemp}°"
                 )
             }
@@ -136,7 +139,7 @@ fun DeviceCard(
             )
 
             Text(
-                text = if (device.engineRpm > 0) "Engine started" else "Engine stopped",
+                text = if (device.engineRpm > 0) "${device.engineRpm}" else "",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -169,3 +172,29 @@ private fun ParamIconColumn(
         )
     }
 }
+
+@Composable
+private fun ParamIconColumnCustom(
+    painter: Painter,
+    value: String,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Icon(
+            painter = painter,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.size(75.dp)
+        )
+        Text(
+            text = value,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Clip
+        )
+    }
+}
+

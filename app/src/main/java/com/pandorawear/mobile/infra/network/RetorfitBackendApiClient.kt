@@ -26,9 +26,8 @@ class RetrofitBackendApiClient(
         password: String,
         deviceName: String
     ): DeviceCredentials {
-        val resp = api.pairDeviceByCred(
-            CredPairRequestDto(email = email, password = password, deviceName = deviceName)
-        )
+        val body = CredPairRequestDto(email = email, password = password, deviceName = deviceName)
+        val resp = api.pairDeviceByCred(body)
         return DeviceCredentials(deviceId = resp.deviceId, token = resp.token)
     }
 
@@ -49,5 +48,14 @@ class RetrofitBackendApiClient(
                 action = action.raw,
             )
         )
+    }
+
+    override suspend fun unpairDevice(
+        deviceId: String,
+    ) {
+        Log.d("WearBridgeService", "unpairDevice $deviceId")
+        api.unpairDevice(
+                deviceId = deviceId
+            )
     }
 }

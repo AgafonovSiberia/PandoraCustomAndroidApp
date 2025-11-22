@@ -6,6 +6,7 @@ import com.pandorawear.mobile.models.CredPairRequestDto
 import com.pandorawear.mobile.models.PairResponseDto
 import com.pandorawear.mobile.models.PandoraDeviceDto
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -26,8 +27,15 @@ interface BackendApiService {
         @Body body: CredPairRequestDto
     ): PairResponseDto
 
+    @DELETE("/api/devices/{device_id}")
+    suspend fun unpairDevice(
+        @Path("device_id") deviceId: String
+    )
+
     @POST("/api/alarm/command")
     suspend fun sendAlarmCommand(
         @Body body: AlarmCommandRequest
     )
+
+
 }
