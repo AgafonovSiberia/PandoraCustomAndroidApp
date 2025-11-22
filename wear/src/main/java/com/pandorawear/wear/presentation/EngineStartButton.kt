@@ -58,7 +58,7 @@ fun EngineStartButton(
             flashProgress.snapTo(0f)
             flashProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = 250),
+                animationSpec = tween(durationMillis = 100),
             )
         }
     }
