@@ -1,8 +1,12 @@
 <resources>
 
     <style name="MainWearTheme.Starting" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@android:color/black</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
-        <item name="postSplashScreenTheme">@android:style/Theme.DeviceDefault</item>
+        <item name="windowSplashScreenBackground">@android:color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher</item>
+        <item name="postSplashScreenTheme">@android:style/Theme.Material</item>
+    </style>
+
+    <style name="SplashTheme" parent="@android:style/Theme.Material">
+        <item name="android:windowBackground">@drawable/splash_background</item>
     </style>
 </resources>

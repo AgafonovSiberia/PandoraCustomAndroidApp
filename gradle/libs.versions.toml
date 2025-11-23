@@ -1,5 +1,7 @@
 [versions]
 agp = "8.13.1"
+composeFoundationVersion = "1.5.0"
+composeMaterial3Version = "1.5.0"
 converterMoshi = "3.0.0"
 coreSplashscreenVersion = "1.0.1"
 kotlin = "2.2.21"
@@ -34,7 +36,9 @@ uiVersion = "1.9.5"
 material3 = "1.4.0"
 
 [libraries]
+androidx-compose-foundation-v150 = { module = "androidx.wear.compose:compose-foundation", version.ref = "composeFoundationVersion" }
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
+androidx-compose-material3-v150 = { module = "androidx.wear.compose:compose-material3", version.ref = "composeMaterial3Version" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-splashscreen-v101 = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreenVersion" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
