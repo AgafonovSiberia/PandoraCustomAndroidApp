@@ -1,6 +1,7 @@
 package com.pandorawear.wear.presentation
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -63,7 +64,7 @@ fun EngineStartButton(
         targetValue = if (isPressed) 1f else 0f,
         animationSpec = tween(
             durationMillis = if (isPressed) longPressDurationMs else 150,
-            easing = LinearEasing,
+            easing = FastOutSlowInEasing,
         ),
         label = "engine_press_progress",
     )
@@ -151,7 +152,9 @@ fun EngineStartButton(
                                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                     onLongPressOverOneSecond()
                                     flashToken++
+
                                     isPressed = false
+
 
                                 }
                             }
