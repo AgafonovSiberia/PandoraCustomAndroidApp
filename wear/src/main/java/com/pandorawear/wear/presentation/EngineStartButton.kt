@@ -1,12 +1,12 @@
 package com.pandorawear.wear.presentation
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.wear.compose.material3.CircularProgressIndicator
@@ -21,7 +21,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -30,6 +29,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material3.ProgressIndicatorDefaults
 import com.pandorawear.wear.R
+import androidx.compose.runtime.*
+
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -39,81 +42,66 @@ fun EngineStartButton(
     modifier: Modifier = Modifier,
 ) {
     val haptic = LocalHapticFeedback.current
+    val scope = rememberCoroutineScope()
 
     var isPressed by remember { mutableStateOf(false) }
-    var progress by remember { mutableStateOf(0f) }
-    var flashTrigger by remember { mutableStateOf(0) }
+    var hasTriggered by remember { mutableStateOf(false) }
+    var flashToken by remember { mutableStateOf(0) }
 
+    val progressSize = 70.dp
     val buttonSize = 50.dp
+
+    val longPressDurationMs = 2000
 
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 1.1f else 1f,
         label = "engine_start_scale",
     )
 
-    val flashProgress = remember { Animatable(0f) }
 
-    LaunchedEffect(flashTrigger) {
-        if (flashTrigger > 0) {
+    val pressProgress by animateFloatAsState(
+        targetValue = if (isPressed) 1f else 0f,
+        animationSpec = tween(
+            durationMillis = if (isPressed) longPressDurationMs else 150,
+            easing = LinearEasing,
+        ),
+        label = "engine_press_progress",
+    )
+
+    val flashProgress = remember { Animatable(1f) }
+    LaunchedEffect(flashToken) {
+        if (flashToken > 0) {
             flashProgress.snapTo(0f)
             flashProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = 100),
+                animationSpec = tween(durationMillis = 250),
             )
         }
     }
 
-    LaunchedEffect(isPressed) {
-        if (isPressed) {
-            val start = System.currentTimeMillis()
-
-            while (true) {
-                val elapsed = System.currentTimeMillis() - start
-                val fraction = (elapsed / 1000f).coerceIn(0f, 1f)
-                progress = fraction
-
-                if (!isPressed) {
-                    progress = 0f
-                    break
-                }
-
-                if (elapsed >= 2000L) {
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                    onLongPressOverOneSecond()
-                    flashTrigger++
-                    isPressed = false
-                    progress = 0f
-                    break
-                }
-
-                kotlinx.coroutines.delay(16)
-            }
-        } else {
-            progress = 0f
-        }
-    }
-
     Box(
-        modifier = modifier.size(70.dp),
+        modifier = modifier.size(progressSize),
         contentAlignment = Alignment.Center,
     ) {
-        if (progress > 0f) {
+        // 1) кольцо прогресса вокруг кнопки
+        if (pressProgress > 0f) {
             CircularProgressIndicator(
-                progress = { progress },
-                modifier = Modifier.size(70.dp),
-                strokeWidth = 8.dp,
+                progress = { pressProgress },
+                modifier = Modifier.size(progressSize),
+                strokeWidth = 6.dp,
+                allowProgressOverflow = true,
                 colors = ProgressIndicatorDefaults.colors(
                     indicatorColor = if (isEngineOn) {
                         MaterialTheme.colorScheme.error
                     } else {
                         MaterialTheme.colorScheme.primary
                     },
-                    trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f),
+                    trackColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
                 ),
             )
         }
 
-        // 2) Поверх — флеш
+        // 2) флеш над кольцом
         val flashAlpha = (1f - flashProgress.value) * 0.25f
         val flashScale = 1f + flashProgress.value * 1.2f
 
@@ -136,7 +124,6 @@ fun EngineStartButton(
             )
         }
 
-        // 3) И в самом верху — кнопка
         Box(
             modifier = Modifier
                 .size(buttonSize)
@@ -154,10 +141,28 @@ fun EngineStartButton(
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onPress = {
+                            hasTriggered = false
                             isPressed = true
-                            val released = tryAwaitRelease()
-                            isPressed = false
-                        }
+
+                            val longPressJob = scope.launch {
+                                delay(longPressDurationMs.toLong())
+                                if (isPressed && !hasTriggered) {
+                                    hasTriggered = true
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onLongPressOverOneSecond()
+                                    flashToken++
+                                    isPressed = false
+
+                                }
+                            }
+
+                            try {
+                                tryAwaitRelease()
+                            } finally {
+                                isPressed = false
+                                longPressJob.cancel()
+                            }
+                        },
                     )
                 },
             contentAlignment = Alignment.Center,
