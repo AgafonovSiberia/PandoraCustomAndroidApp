@@ -170,7 +170,7 @@ private fun ReadyScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 12.dp, vertical = 20.dp),
+            .padding(horizontal = 12.dp, vertical = 2.dp),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -220,7 +220,7 @@ private fun ReadyScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp),
+                .padding(bottom = 30.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             EngineStartButton(
@@ -237,13 +237,6 @@ private fun ReadyScreen(
             )
 
             Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                text = if (engineRunning) "Остановить двигатель" else "Запуск двигателя",
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onBackground,
-            )
         }
     }
 }
