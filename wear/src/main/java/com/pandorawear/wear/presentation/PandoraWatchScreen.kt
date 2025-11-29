@@ -73,7 +73,7 @@ private fun StatusChip(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-            .padding(horizontal = 10.dp, vertical = 6.dp),
+            .padding(horizontal = 6.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center,
     ) {
         Row(
@@ -83,12 +83,12 @@ private fun StatusChip(
                 painter = icon,
                 contentDescription = contentDescription,
                 tint = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.size(22.dp),
+                modifier = Modifier.size(12.dp),
             )
-            Spacer(Modifier.width(6.dp))
+            Spacer(Modifier.width(4.dp))
             Text(
                 text = valueText,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -170,7 +170,7 @@ private fun ReadyScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 12.dp, vertical = 2.dp),
+            .padding(horizontal = 10.dp),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -194,11 +194,11 @@ private fun ReadyScreen(
                 overflow = TextOverflow.Ellipsis,
             )
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 StatusChip(
                     icon = painterResource(R.drawable.battery_icon_512_vector),
@@ -210,6 +210,13 @@ private fun ReadyScreen(
                 StatusChip(
                     icon = painterResource(R.drawable.engine_temp_icon_512_vector),
                     valueText = status.engineTemp?.let { "${it}°" } ?: "--",
+                    contentDescription = "Температура двигателя",
+                    modifier = Modifier.weight(1f),
+                )
+
+                StatusChip(
+                    icon = painterResource(R.drawable.cabin_temp_icon_512_vector),
+                    valueText = status.cabinTemp?.let { "${it}°" } ?: "--",
                     contentDescription = "Температура двигателя",
                     modifier = Modifier.weight(1f),
                 )

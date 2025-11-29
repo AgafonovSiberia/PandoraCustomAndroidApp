@@ -1,12 +1,15 @@
 package com.pandorawear.mobile.pages.pandora
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -21,6 +24,8 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.pandorawear.mobile.R
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun EngineStartBar(
@@ -30,11 +35,11 @@ fun EngineStartBar(
 ) {
     Column(
         modifier = modifier
-            .padding(bottom = 8.dp),
+            .padding(bottom = 28.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(4.dp))
 
         EngineStartButton(
             isEngineOn = isEngineOn,
@@ -43,6 +48,7 @@ fun EngineStartBar(
     }
 }
 
+
 @Composable
 fun EngineStartButton(
     isEngineOn: Boolean,
@@ -50,129 +56,115 @@ fun EngineStartButton(
     modifier: Modifier = Modifier,
 ) {
     val haptic = LocalHapticFeedback.current
+    val scope = rememberCoroutineScope()
 
     var isPressed by remember { mutableStateOf(false) }
-    var progress by remember { mutableStateOf(0f) }
-    var flashTrigger by remember { mutableStateOf(0) }
+    var hasTriggered by remember { mutableStateOf(false) }
+    var flashToken by remember { mutableStateOf(0) }
+
+    val buttonWidth = 240.dp
+    val buttonHeight = 90.dp
+
+    val longPressDurationMs = 2000
 
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 1.1f else 1f,
-        label = "engine_start_scale"
+        targetValue = if (isPressed) 1.05f else 1f,
+        label = "engine_start_scale",
     )
 
-    val flashProgress = remember { Animatable(0f) }
+    val pressProgress by animateFloatAsState(
+        targetValue = if (isPressed) 1f else 0f,
+        animationSpec = if (isPressed) {
+            tween(
+                durationMillis = longPressDurationMs,
+                easing = LinearEasing,
+            )
+        } else {
+            tween(
+                durationMillis = 150,
+                easing = FastOutSlowInEasing,
+            )
+        },
+        label = "engine_press_progress",
+    )
 
-    LaunchedEffect(flashTrigger) {
-        if (flashTrigger > 0) {
+    val flashProgress = remember { Animatable(1f) }
+    LaunchedEffect(flashToken) {
+        if (flashToken > 0) {
             flashProgress.snapTo(0f)
             flashProgress.animateTo(
                 targetValue = 1f,
-                animationSpec = tween(durationMillis = 250)
+                animationSpec = tween(durationMillis = 250),
             )
         }
     }
 
-    // логика удержания
-    LaunchedEffect(isPressed) {
-        if (isPressed) {
-            val start = System.currentTimeMillis()
+    val shape = RoundedCornerShape(20.dp)
 
-            while (true) {
-                val elapsed = System.currentTimeMillis() - start
-                val fraction = (elapsed / 1000f).coerceIn(0f, 1f)
-                progress = fraction
+    val baseColor =
+        if (isEngineOn) MaterialTheme.colorScheme.errorContainer
+        else MaterialTheme.colorScheme.primaryContainer
 
-                if (!isPressed) {
-                    progress = 0f
-                    break
-                }
+    val progressColor =
+        if (isEngineOn) MaterialTheme.colorScheme.error.copy(alpha = 0.45f)
+        else MaterialTheme.colorScheme.primary.copy(alpha = 0.45f)
 
-                if (elapsed >= 1000L) {
-                    // 1) виброотклик
-                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-
-                    // 2) коллбек
-                    onLongPressOverOneSecond()
-
-                    // 3) вспышка
-                    flashTrigger++
-
-                    // 4) сброс состояния
-                    isPressed = false
-                    progress = 0f
-                    break
-                }
-
-                kotlinx.coroutines.delay(16)
-            }
-        } else {
-            progress = 0f
-        }
-    }
+    val flashAlpha = (1f - flashProgress.value) * 0.25f
+    val flashScale = 1f + flashProgress.value * 0.2f
 
     Box(
-        modifier = modifier.size(96.dp),
-        contentAlignment = Alignment.Center
+        modifier = modifier
+            .width(buttonWidth)
+            .height(buttonHeight),
+        contentAlignment = Alignment.Center,
     ) {
-        val flashAlpha = (1f - flashProgress.value) * 0.25f
-        val flashScale = 1f + flashProgress.value * 1.2f
-
-        if (flashAlpha > 0.01f) {
-            Box(
-                modifier = Modifier
-                    .size(80.dp)
-                    .graphicsLayer {
-                        alpha = flashAlpha
-                        scaleX = flashScale
-                        scaleY = flashScale
-                    }
-                    .clip(CircleShape)
-                    .background(
-                        if (isEngineOn)
-                            MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
-                        else
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.6f)
-                    )
-            )
-        }
-
-        if (progress > 0f) {
-            CircularProgressIndicator(
-                progress = { progress },
-                strokeWidth = 4.dp,
-                color = if (isEngineOn)
-                    MaterialTheme.colorScheme.error
-                else
-                    MaterialTheme.colorScheme.primary,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-
         Box(
             modifier = Modifier
-                .size(80.dp)
+                .matchParentSize()
                 .graphicsLayer(
                     scaleX = scale,
-                    scaleY = scale
+                    scaleY = scale,
                 )
-                .clip(CircleShape)
-                .background(
-                    if (isEngineOn)
-                        MaterialTheme.colorScheme.errorContainer
-                    else
-                        MaterialTheme.colorScheme.primaryContainer
-                )
+                .clip(shape)
+                .background(baseColor)
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onPress = {
+                            hasTriggered = false
                             isPressed = true
-                            val released = tryAwaitRelease()
-                            isPressed = false
-                        }
+
+                            val longPressJob = scope.launch {
+                                delay(longPressDurationMs.toLong())
+                                if (isPressed && !hasTriggered) {
+                                    hasTriggered = true
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onLongPressOverOneSecond()
+                                    flashToken++
+                                    isPressed = false
+                                }
+                            }
+
+                            try {
+                                tryAwaitRelease()
+                            } finally {
+                                isPressed = false
+                                longPressJob.cancel()
+                            }
+                        },
                     )
                 },
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
+            if (pressProgress > 0f) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(pressProgress)
+                        .align(Alignment.CenterStart)
+                        .background(progressColor),
+                )
+            }
+
             Icon(
                 painter = if (isEngineOn)
                     painterResource(R.drawable.engine_stop_fan_512_vector)
@@ -180,7 +172,27 @@ fun EngineStartButton(
                     painterResource(R.drawable.engine_start_fan_512_vector),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                modifier = Modifier.size(60.dp)
+                modifier = Modifier.size(40.dp),
+            )
+        }
+
+
+        if (flashAlpha > 0.01f) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .graphicsLayer {
+                        alpha = flashAlpha
+                        scaleX = flashScale
+                        scaleY = flashScale
+                    }
+                    .clip(shape)
+                    .background(
+                        if (isEngineOn)
+                            MaterialTheme.colorScheme.error.copy(alpha = 0.6f)
+                        else
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                    ),
             )
         }
     }

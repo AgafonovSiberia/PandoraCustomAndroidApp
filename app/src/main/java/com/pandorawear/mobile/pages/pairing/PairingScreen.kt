@@ -244,8 +244,6 @@ private fun DeviceAlreadyPairedState(
                 TextButton(
                     onClick = {
                         if (isUnpairing) return@TextButton
-                        isUnpairing = true
-                        errorMessage = null
 
                         scope.launch {
                             val credentials = credentialsStorage.load()
@@ -254,7 +252,6 @@ private fun DeviceAlreadyPairedState(
                                 credentialsStorage.clear()
 
                                 if (backendApiClient == null) {
-                                    errorMessage = "Сервер недоступен"
                                     return@runCatching
                                 }
                                 else {
@@ -263,14 +260,11 @@ private fun DeviceAlreadyPairedState(
 
                             }
 
-                            isUnpairing = false
-                            showConfirm = false
-
                             if (result.isSuccess) {
                                 credentialsStorage.clear()
                                 onDeviceUnpaired()
                             } else {
-                                errorMessage = result.exceptionOrNull()?.message
+                                result.exceptionOrNull()?.message
                                     ?: "Не удалось отвязать устройство"
                             }
                         }

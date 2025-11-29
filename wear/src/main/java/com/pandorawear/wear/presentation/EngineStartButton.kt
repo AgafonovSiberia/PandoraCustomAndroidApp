@@ -77,7 +77,6 @@ fun EngineStartButton(
         label = "engine_press_progress",
     )
 
-    // анимация вспышки
     val flashProgress = remember { Animatable(1f) }
     LaunchedEffect(flashToken) {
         if (flashToken > 0) {

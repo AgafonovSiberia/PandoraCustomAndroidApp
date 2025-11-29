@@ -5,10 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
-import androidx.compose.material.icons.outlined.BatteryStd
-import androidx.compose.material.icons.outlined.DeviceThermostat
-import androidx.compose.material.icons.outlined.DirectionsCar
-import androidx.compose.material.icons.outlined.LocalGasStation
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -18,9 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.pandorawear.mobile.models.AlarmDeviceUiModel
@@ -130,48 +124,17 @@ fun DeviceCard(
                 )
             }
 
-            Spacer(Modifier.height(80.dp))
+            Spacer(Modifier.height(60.dp))
 
             EngineStartBar(
                 isEngineOn = device.engineRpm > 0,
                 onConfirmed = onEngineConfirmed,
                 modifier = Modifier.fillMaxWidth()
             )
-
-            Text(
-                text = if (device.engineRpm > 0) "${device.engineRpm}" else "",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
         }
     }
 }
 
-@Composable
-private fun ParamIconColumn(
-    icon: ImageVector,
-    value: String,
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.size(55.dp)
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-            overflow = TextOverflow.Clip
-        )
-    }
-}
 
 @Composable
 private fun ParamIconColumnCustom(

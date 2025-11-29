@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 class PandoraWatchViewModel(
     private val phoneGateway: PhoneGateway,
-    private val pollingIntervalMillis: Long = 10_000L,
+    private val pollingIntervalMillis: Long = 5_000L,
 ) : ViewModel() {
 
     companion object {
@@ -57,13 +57,13 @@ class PandoraWatchViewModel(
 
         val message = when (status.errorMsg) {
             ERROR_BACKEND_UNAVAILABLE ->
-                "Бэкенд недоступен. Проверьте настройки сервера в приложении на телефоне."
+                "Бэкенд недоступен. Проверьте настройки на телефоне."
 
             ERROR_NO_DEVICE ->
-                "Нет привязанного устройства Pandora. Добавьте устройство в приложении на телефоне."
+                "Нет привязанного устройства Pandora."
 
             ERROR_NOT_READY ->
-                "Телефон не готов. Откройте приложение Pandora на телефоне."
+                "Настройте приложение на телефоне."
 
             else ->
                 status.errorMsg ?: "Настройте приложение на телефоне"

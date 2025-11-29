@@ -9,6 +9,9 @@ private val DarkColorScheme = ColorScheme().copy(
     primary = BluePrimary,
     onPrimary = Color.White,
 
+    primaryContainer = BluePrimaryDark,
+    onPrimaryContainer = Color.White,
+
     secondary = BlueSecondary,
     onSecondary = Color.White,
 

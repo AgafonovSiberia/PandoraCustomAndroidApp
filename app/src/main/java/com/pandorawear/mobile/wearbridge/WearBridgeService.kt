@@ -21,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
 class WearBridgeService : WearableListenerService() {
 
@@ -209,11 +210,10 @@ class WearBridgeService : WearableListenerService() {
             return
         }
 
-        Log.d("WearBridgeService", "request:${request.toString()}")
+        Log.d("WearBridgeService", "request:${request}")
         val backend = prepareBackendClient()
         if (backend == null) {
-            val error = resolveBackendInitError()
-            sendStatusError(nodeId, request.requestId, error)
+            sendCommandError(nodeId, request.requestId)
             return
         }
 
@@ -247,6 +247,10 @@ class WearBridgeService : WearableListenerService() {
                 requestId = request.requestId,
                 status = statusDto,
             )
+
+        } catch (e: CancellationException) {
+            Log.d(TAG, "Coroutine cancelled", e)
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "Command execution failed", e)
             sendCommandError(nodeId, request.requestId)

@@ -68,7 +68,6 @@ class WearPhoneGateway(
     private var cachedPhoneNodeId: String? = null
 
     init {
-        // Регистрируемся как listener один раз на весь жизненный цикл gateway.
         messageClient.addListener(this)
     }
 
@@ -100,7 +99,7 @@ class WearPhoneGateway(
     override suspend fun requestStatus(): Result<WatchPandoraStatus> {
         return runCatching {
             val nodeId = getOrResolvePhoneNodeId()
-                ?: throw IllegalStateException("Телефон не найден (нет подключённых узлов)")
+                ?: throw IllegalStateException("Телефон не найден")
 
             val requestId = UUID.randomUUID().toString()
             val deferred = CompletableDeferred<StatusResponsePayload>()
@@ -136,7 +135,7 @@ class WearPhoneGateway(
     override suspend fun sendCommand(command: PandoraCommand, alarmDeviceId: Integer): Result<WatchPandoraStatus> {
         return runCatching {
             val nodeId = getOrResolvePhoneNodeId()
-                ?: throw IllegalStateException("Телефон не найден (нет подключённых узлов)")
+                ?: throw IllegalStateException("Телефон не найден")
 
             Log.d("WearPhoneGateway", "sendCommand: command=$command, alarmDeviceId=$alarmDeviceId, nodeId=$nodeId")
 

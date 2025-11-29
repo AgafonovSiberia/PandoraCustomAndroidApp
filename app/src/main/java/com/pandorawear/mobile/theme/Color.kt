@@ -17,3 +17,5 @@ val TextSecondary = Color(0xFFB3B3B3)
 
 // Ошибки
 val ErrorRed = Color(0xFFFF4A4A)
+
+val primaryContainer = Color(0xFFFF4A4A)
