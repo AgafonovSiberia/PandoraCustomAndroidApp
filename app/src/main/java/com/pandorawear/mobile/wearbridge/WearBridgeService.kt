@@ -4,7 +4,6 @@ import android.util.Log
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.Wearable
 import com.google.android.gms.wearable.WearableListenerService
-import com.pandorawear.mobile.AppState
 import com.pandorawear.mobile.infra.network.BackendApiClient
 import com.pandorawear.mobile.infra.network.BackendApiClientFactory
 import com.pandorawear.mobile.infra.network.BackendUrls
@@ -22,14 +21,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import com.pandorawear.mobile.BackendStatusStore
 
 class WearBridgeService : WearableListenerService() {
 
     companion object {
         private const val TAG = "WearBridgeService"
-
-        private const val ERROR_NOT_READY = "NOT_READY"
         private const val ERROR_BACKEND_UNAVAILABLE = "BACKEND_UNAVAILABLE"
         private const val ERROR_NO_DEVICE = "NO_DEVICE"
         private const val ERROR_COMMAND_FAILED = "COMMAND_FAILED"
@@ -45,9 +41,7 @@ class WearBridgeService : WearableListenerService() {
     private var backendApiClient: BackendApiClient? = null
 
     private val moshi: Moshi by lazy {
-        Moshi.Builder()
-            .add(KotlinJsonAdapterFactory())
-            .build()
+        Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
     }
 
     private val statusRequestAdapter: JsonAdapter<StatusRequestPayload> by lazy {
@@ -86,17 +80,31 @@ class WearBridgeService : WearableListenerService() {
 
         scope.launch {
             when (path) {
-                WearBridgePaths.STATUS_GET ->
-                    handleStatusRequest(nodeId, dataBytes)
+                WearBridgePaths.STATUS_GET -> handleStatusRequest(nodeId, dataBytes)
 
-                WearBridgePaths.COMMAND ->
-                    handleCommandRequest(nodeId, dataBytes)
+                WearBridgePaths.COMMAND -> handleCommandRequest(nodeId, dataBytes)
 
                 else -> {
                     Log.w(TAG, "Unknown path: $path")
                 }
             }
         }
+    }
+
+    private fun resolveBackendInitError(): String {
+        val config = backendConfigStorage.load()
+        if (config == null) {
+            Log.w(TAG, "Backend config is null while resolving error")
+            return ERROR_BACKEND_UNAVAILABLE
+        }
+
+        val creds = deviceCredentialsStorage.load()
+        if (creds == null) {
+            Log.w(TAG, "Device credentials are null while resolving error")
+            return ERROR_NO_DEVICE
+        }
+
+        return ERROR_BACKEND_UNAVAILABLE
     }
 
     private fun prepareBackendClient(): BackendApiClient? {
@@ -150,13 +158,7 @@ class WearBridgeService : WearableListenerService() {
 
         val backend = prepareBackendClient()
         if (backend == null) {
-            val appState = resolveAppState()
-            val error = when (appState) {
-                AppState.BACKEND_UNAVAILABLE -> ERROR_BACKEND_UNAVAILABLE
-                AppState.BACKEND_AVAILABLE_NO_DEVICE -> ERROR_NO_DEVICE
-                AppState.BACKEND_READY_WITH_DEVICE -> ERROR_BACKEND_UNAVAILABLE
-            }
-
+            val error = resolveBackendInitError()
             sendStatusError(nodeId, request.requestId, error)
             return
         }
@@ -171,53 +173,7 @@ class WearBridgeService : WearableListenerService() {
         }
     }
 
-    private fun resolveAppState(): AppState {
-        // Сначала пытаемся взять из хранилища
-        val storedState = BackendStatusStore.current()
-        if (storedState != AppState.BACKEND_UNAVAILABLE) {
-            return storedState
-        }
 
-        // Если телефон был перезагружен и не инициализировал AppState, то вычисляем его сами
-        val config = backendConfigStorage.load()
-        val creds = deviceCredentialsStorage.load()
-
-        return when {
-            config == null -> AppState.BACKEND_UNAVAILABLE
-            creds == null  -> AppState.BACKEND_AVAILABLE_NO_DEVICE
-            else           -> AppState.BACKEND_READY_WITH_DEVICE
-        }
-    }
-
-    private fun mapDevicesToStatus(devices: List<AlarmDeviceUiModel>): StatusDto {
-        val device = devices.firstOrNull()
-            ?: return StatusDto(
-                alarmDeviceId = null,
-                name = null,
-                isReady = false,
-                fuelTank = null,
-                cabinTemp = null,
-                engineTemp = null,
-                batteryVoltage = null,
-                engineRunning = null,
-                lastUpdateMillis = null,
-                error = ERROR_NO_DEVICE,
-            )
-
-        return StatusDto(
-            alarmDeviceId = device.id,
-            name = device.name,
-            isReady = true,
-            fuelTank = device.fuelTank,
-            engineTemp = device.engineTemp,
-            cabinTemp = device.cabinTemp,
-            batteryVoltage = device.batteryVoltage,
-            engineRunning = device.engineRpm > 0,
-            lastUpdateMillis = null,
-            error = null,
-
-        )
-    }
 
     private fun sendStatusSuccess(
         nodeId: String,
@@ -234,31 +190,6 @@ class WearBridgeService : WearableListenerService() {
         sendMessage(nodeId, WearBridgePaths.STATUS_RESPONSE, json)
     }
 
-    private fun sendStatusError(
-        nodeId: String,
-        requestId: String?,
-        error: String,
-    ) {
-        val payload = StatusResponsePayload(
-            requestId = requestId,
-            status = StatusDto(
-                alarmDeviceId = null,
-                name = null,
-                isReady = false,
-                fuelTank = null,
-                cabinTemp = null,
-                engineTemp = null,
-                batteryVoltage = null,
-                engineRunning = null,
-                lastUpdateMillis = null,
-                error = error,
-            ),
-            alarmDeviceId = null
-        )
-
-        val json = statusResponseAdapter.toJson(payload)
-        sendMessage(nodeId, WearBridgePaths.STATUS_RESPONSE, json)
-    }
 
     private suspend fun handleCommandRequest(nodeId: String, data: ByteArray) {
         val json = data.decodeToString()
@@ -282,17 +213,9 @@ class WearBridgeService : WearableListenerService() {
 
         Log.d("WearBridgeService", "request:${request.toString()}")
         val backend = prepareBackendClient()
-        Log.d("WearBridgeService", "backend:${backend}")
         if (backend == null) {
-            Log.d("WearBridgeService", "backend null")
-            val appState = resolveAppState()
-            val error = when (appState) {
-                AppState.BACKEND_UNAVAILABLE -> ERROR_BACKEND_UNAVAILABLE
-                AppState.BACKEND_AVAILABLE_NO_DEVICE -> ERROR_NO_DEVICE
-                AppState.BACKEND_READY_WITH_DEVICE -> ERROR_BACKEND_UNAVAILABLE
-            }
-
-            sendCommandError(nodeId, request.requestId, error)
+            val error = resolveBackendInitError()
+            sendStatusError(nodeId, request.requestId, error)
             return
         }
 
@@ -349,6 +272,31 @@ class WearBridgeService : WearableListenerService() {
         sendMessage(nodeId, WearBridgePaths.COMMAND_RESPONSE, json)
     }
 
+    private fun sendStatusError(
+        nodeId: String,
+        requestId: String?,
+        error: String,
+    ) {
+        val payload = StatusResponsePayload(
+            requestId = requestId, status = StatusDto(
+                alarmDeviceId = null,
+                name = null,
+                isReady = false,
+                fuelTank = null,
+                cabinTemp = null,
+                engineTemp = null,
+                batteryVoltage = null,
+                engineRunning = null,
+                lastUpdateMillis = null,
+                error = error,
+            ), alarmDeviceId = null
+        )
+
+        val json = statusResponseAdapter.toJson(payload)
+        sendMessage(nodeId, WearBridgePaths.STATUS_RESPONSE, json)
+    }
+
+
     private fun sendCommandError(
         nodeId: String,
         requestId: String?,
@@ -371,10 +319,37 @@ class WearBridgeService : WearableListenerService() {
         json: String,
     ) {
         val bytes = json.encodeToByteArray()
-        Wearable.getMessageClient(this)
-            .sendMessage(nodeId, path, bytes)
-            .addOnFailureListener { e ->
-                Log.e(TAG, "Failed to send message to node=$nodeId path=$path", e)
-            }
+        Wearable.getMessageClient(this).sendMessage(nodeId, path, bytes).addOnFailureListener { e ->
+            Log.e(TAG, "Failed to send message to node=$nodeId path=$path", e)
+        }
+    }
+
+    private fun mapDevicesToStatus(devices: List<AlarmDeviceUiModel>): StatusDto {
+        val device = devices.firstOrNull() ?: return StatusDto(
+            alarmDeviceId = null,
+            name = null,
+            isReady = false,
+            fuelTank = null,
+            cabinTemp = null,
+            engineTemp = null,
+            batteryVoltage = null,
+            engineRunning = null,
+            lastUpdateMillis = null,
+            error = ERROR_NO_DEVICE,
+        )
+
+        return StatusDto(
+            alarmDeviceId = device.id,
+            name = device.name,
+            isReady = true,
+            fuelTank = device.fuelTank,
+            engineTemp = device.engineTemp,
+            cabinTemp = device.cabinTemp,
+            batteryVoltage = device.batteryVoltage,
+            engineRunning = device.engineRpm > 0,
+            lastUpdateMillis = null,
+            error = null,
+
+            )
     }
 }

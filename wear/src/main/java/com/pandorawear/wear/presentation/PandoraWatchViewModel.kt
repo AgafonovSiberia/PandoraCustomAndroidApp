@@ -16,6 +16,12 @@ class PandoraWatchViewModel(
     private val pollingIntervalMillis: Long = 10_000L,
 ) : ViewModel() {
 
+    companion object {
+        private const val ERROR_BACKEND_UNAVAILABLE = "BACKEND_UNAVAILABLE"
+        private const val ERROR_NO_DEVICE = "NO_DEVICE"
+        private const val ERROR_NOT_READY = "NOT_READY"
+    }
+
     private val _uiState: MutableStateFlow<PandoraWatchUiState> =
         MutableStateFlow(PandoraWatchUiState.Loading)
     val uiState: StateFlow<PandoraWatchUiState> = _uiState
@@ -39,14 +45,39 @@ class PandoraWatchViewModel(
         pollingJob = null
     }
 
-    fun refreshStatus() {
-        viewModelScope.launch {
-            refreshStatusOnce()
+    private fun applyStatusFromPhone(
+        status: WatchPandoraStatus,
+    ) {
+        lastKnownStatus = status
+
+        if (status.isReady == true) {
+            _uiState.value = PandoraWatchUiState.Ready(status)
+            return
         }
+
+        val message = when (status.errorMsg) {
+            ERROR_BACKEND_UNAVAILABLE ->
+                "Бэкенд недоступен. Проверьте настройки сервера в приложении на телефоне."
+
+            ERROR_NO_DEVICE ->
+                "Нет привязанного устройства Pandora. Добавьте устройство в приложении на телефоне."
+
+            ERROR_NOT_READY ->
+                "Телефон не готов. Откройте приложение Pandora на телефоне."
+
+            else ->
+                status.errorMsg ?: "Настройте приложение на телефоне"
+        }
+
+        _uiState.value = PandoraWatchUiState.NotReady(
+            lastKnownStatus = lastKnownStatus,
+            message = message,
+        )
     }
 
+
     private suspend fun refreshStatusOnce() {
-        if (_uiState.value is PandoraWatchUiState.Loading) {
+        if (lastKnownStatus == null) {
             _uiState.value = PandoraWatchUiState.Loading
         }
 
@@ -54,18 +85,9 @@ class PandoraWatchViewModel(
 
         result
             .onSuccess { status ->
-                lastKnownStatus = status
-
-                status.isReady?.let {
-                    if (!it) {
-                        _uiState.value = PandoraWatchUiState.NotReady(
-                            lastKnownStatus = lastKnownStatus,
-                            message = status.errorMsg ?: "Настройте приложение на телефоне",
-                        )
-                    } else {
-                        _uiState.value = PandoraWatchUiState.Ready(status)
-                    }
-                }
+                applyStatusFromPhone(
+                    status = status
+                )
             }
             .onFailure { error ->
                 _uiState.value = PandoraWatchUiState.Error(
@@ -82,24 +104,16 @@ class PandoraWatchViewModel(
         }
 
         val currentStatus = currentState.status
-        val deviceId = currentStatus.alarmDeviceId?: return
+        val deviceId = currentStatus.alarmDeviceId ?: return
 
         viewModelScope.launch {
             val result = phoneGateway.sendCommand(command = command, alarmDeviceId = deviceId)
 
             result
                 .onSuccess { status ->
-                    lastKnownStatus = status
-                    status.isReady?.let {
-                        if (!it) {
-                            _uiState.value = PandoraWatchUiState.NotReady(
-                                lastKnownStatus = lastKnownStatus,
-                                message = status.errorMsg ?: "Телефон не готов",
-                            )
-                        } else {
-                            _uiState.value = PandoraWatchUiState.Ready(status)
-                        }
-                    }
+                    applyStatusFromPhone(
+                        status = status,
+                    )
                 }
                 .onFailure { error ->
                     _uiState.value = PandoraWatchUiState.Error(
