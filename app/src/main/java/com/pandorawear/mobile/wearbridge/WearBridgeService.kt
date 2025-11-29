@@ -174,7 +174,6 @@ class WearBridgeService : WearableListenerService() {
     }
 
 
-
     private fun sendStatusSuccess(
         nodeId: String,
         requestId: String?,
@@ -193,7 +192,7 @@ class WearBridgeService : WearableListenerService() {
 
     private suspend fun handleCommandRequest(nodeId: String, data: ByteArray) {
         val json = data.decodeToString()
-        Log.d("WearBridgeService", "payload:${json.toString()}")
+        Log.d("WearBridgeService", "payload:${json}")
         val request = try {
             commandRequestAdapter.fromJson(json)
         } catch (e: Exception) {
@@ -201,13 +200,12 @@ class WearBridgeService : WearableListenerService() {
             sendCommandError(
                 nodeId = nodeId,
                 requestId = null,
-                error = ERROR_INCOMPATIBLE_PROTOCOL,
             )
             return
         }
 
         if (request == null) {
-            sendCommandError(nodeId, null, ERROR_INCOMPATIBLE_PROTOCOL)
+            sendCommandError(nodeId, null)
             return
         }
 
@@ -220,17 +218,16 @@ class WearBridgeService : WearableListenerService() {
         }
 
         try {
-            deviceCredentialsStorage.load()
-                ?: run {
-                    sendCommandError(nodeId, request.requestId, ERROR_NO_DEVICE)
-                    return
-                }
+            deviceCredentialsStorage.load() ?: run {
+                sendCommandError(nodeId, request.requestId)
+                return
+            }
 
             val action = when (request.action.lowercase()) {
                 "start" -> AlarmActionDto.START
                 "stop" -> AlarmActionDto.STOP
                 else -> {
-                    sendCommandError(nodeId, request.requestId, ERROR_COMMAND_FAILED)
+                    sendCommandError(nodeId, request.requestId)
                     return
                 }
             }
@@ -252,7 +249,7 @@ class WearBridgeService : WearableListenerService() {
             )
         } catch (e: Exception) {
             Log.e(TAG, "Command execution failed", e)
-            sendCommandError(nodeId, request.requestId, ERROR_COMMAND_FAILED)
+            sendCommandError(nodeId, request.requestId)
         }
     }
 
@@ -300,7 +297,6 @@ class WearBridgeService : WearableListenerService() {
     private fun sendCommandError(
         nodeId: String,
         requestId: String?,
-        error: String,
     ) {
         val payload = CommandResponsePayload(
             alarmDeviceId = null,
