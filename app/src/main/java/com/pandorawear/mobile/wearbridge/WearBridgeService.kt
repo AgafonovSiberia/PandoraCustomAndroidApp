@@ -22,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import com.pandorawear.mobile.BackendStatusStore
 
 class WearBridgeService : WearableListenerService() {
 
@@ -171,13 +172,20 @@ class WearBridgeService : WearableListenerService() {
     }
 
     private fun resolveAppState(): AppState {
+        // Сначала пытаемся взять из хранилища
+        val storedState = BackendStatusStore.current()
+        if (storedState != AppState.BACKEND_UNAVAILABLE) {
+            return storedState
+        }
+
+        // Если телефон был перезагружен и не инициализировал AppState, то вычисляем его сами
         val config = backendConfigStorage.load()
         val creds = deviceCredentialsStorage.load()
 
         return when {
             config == null -> AppState.BACKEND_UNAVAILABLE
-            creds == null -> AppState.BACKEND_AVAILABLE_NO_DEVICE
-            else -> AppState.BACKEND_READY_WITH_DEVICE
+            creds == null  -> AppState.BACKEND_AVAILABLE_NO_DEVICE
+            else           -> AppState.BACKEND_READY_WITH_DEVICE
         }
     }
 

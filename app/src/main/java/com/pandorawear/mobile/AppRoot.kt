@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import com.pandorawear.mobile.infra.session.SessionEvents
 import com.pandorawear.mobile.pages.pandora.PandoraScreen
 import com.pandorawear.mobile.theme.SurfaceDarkLow
+import com.pandorawear.mobile.BackendStatusStore
 
 enum class MainTab {
     PANDORA,
@@ -176,6 +177,7 @@ fun AppRoot(
         if (host.isBlank()) {
             backendApiClient = null
             appState = AppState.BACKEND_UNAVAILABLE
+            BackendStatusStore.set(appState)
             selectedTab = MainTab.SETTINGS
             return@LaunchedEffect
         }
@@ -185,6 +187,7 @@ fun AppRoot(
         if (!ok) {
             backendApiClient = null
             appState = AppState.BACKEND_UNAVAILABLE
+            BackendStatusStore.set(appState)
             selectedTab = MainTab.SETTINGS
             return@LaunchedEffect
         }
@@ -205,6 +208,7 @@ fun AppRoot(
         if (client == null) {
             backendApiClient = null
             appState = AppState.BACKEND_UNAVAILABLE
+            BackendStatusStore.set(appState)
             selectedTab = MainTab.SETTINGS
             return@LaunchedEffect
         }
@@ -216,6 +220,7 @@ fun AppRoot(
         } else {
             AppState.BACKEND_AVAILABLE_NO_DEVICE
         }
+        BackendStatusStore.set(appState)
 
         selectedTab = when (appState) {
             AppState.BACKEND_UNAVAILABLE          -> MainTab.SETTINGS
