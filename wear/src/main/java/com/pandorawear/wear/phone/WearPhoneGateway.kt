@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class WearPhoneGateway(
     private val context: Context,
-    private val timeoutMillis: Long = 3_000L,
+    private val timeoutMillis: Long = 6_000L,
 ) : PhoneGateway, MessageClient.OnMessageReceivedListener {
 
     private val messageClient: MessageClient by lazy {
