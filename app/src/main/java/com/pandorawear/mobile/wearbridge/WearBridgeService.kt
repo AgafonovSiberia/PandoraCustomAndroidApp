@@ -168,6 +168,8 @@ class WearBridgeService : WearableListenerService() {
             val devices = backend.getDevices()
             val statusDto = mapDevicesToStatus(devices)
             sendStatusSuccess(nodeId, request.requestId, statusDto)
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "Failed to fetch devices for status", e)
             sendStatusError(nodeId, request.requestId, ERROR_BACKEND_UNAVAILABLE)

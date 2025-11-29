@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 class PandoraWatchViewModel(
     private val phoneGateway: PhoneGateway,
-    private val pollingIntervalMillis: Long = 5_000L,
+    private val pollingIntervalMillis: Long = 10_000L,
 ) : ViewModel() {
 
     companion object {

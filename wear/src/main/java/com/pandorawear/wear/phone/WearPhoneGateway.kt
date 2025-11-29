@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class WearPhoneGateway(
     private val context: Context,
-    private val timeoutMillis: Long = 6_000L,
+    private val timeoutMillis: Long = 5_000L,
 ) : PhoneGateway, MessageClient.OnMessageReceivedListener {
 
     private val messageClient: MessageClient by lazy {
@@ -122,7 +122,7 @@ class WearPhoneGateway(
                 }
             } catch (e: TimeoutCancellationException) {
                 pendingStatusRequests.remove(requestId)
-                throw IllegalStateException("Тайм-аут при ожидании ответа статуса", e)
+                throw IllegalStateException("Request timeout", e)
             }
 
 
@@ -166,12 +166,12 @@ class WearPhoneGateway(
                 }
             } catch (e: TimeoutCancellationException) {
                 pendingCommandRequests.remove(requestId)
-                throw IllegalStateException("Тайм-аут при ожидании ответа на команду", e)
+                throw IllegalStateException("RequestTimeout", e)
             }
 
             if (!response.success) {
                 val errorCode = response.status?.error ?: "UNKNOWN_ERROR"
-                throw IllegalStateException("Команда не выполнена: $errorCode")
+                throw IllegalStateException("Error command: $errorCode")
             }
 
             val statusDto = response.status
