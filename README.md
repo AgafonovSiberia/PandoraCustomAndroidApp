@@ -1,15 +1,13 @@
 # PandoraCustomAndroidApp
-<p align="center">
-  <img src="assets/Main.jpg" alt="MobileApp" width="195" height="385" />
-  <img src="assets/WearApp.png" alt="WearApp" width="195" height="530" />
-</p>
 
 **PandoraCustomAndroidApp** — это решение для Android и Wear OS, разработанное для взаимодействия с охранными системами Pandora через собственный сервис [PandoraCustomAPIServer](https://github.com/AgafonovSiberia/PandoraCustomApiServer).
 Это **кастомный** клиент, позволяющий пользователям отслеживать, контролировать и управлять своими устройствами Pandora прямо со смартфона или смарт-часов.
 
 Проект состоит из двух основных модулей:
 *   **:app**: Приложение для Android.
+ <img src="assets/Main.jpg" alt="MobileApp" width="195" height="385" />
 *   **:wear**: Приложение для Wear OS.
+  <img src="assets/WearApp.png" alt="WearApp" width="195" height="385" />
 
 
 ### Мобильное приложение
