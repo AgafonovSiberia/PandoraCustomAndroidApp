@@ -45,6 +45,7 @@ import kotlinx.coroutines.delay
 fun EngineStartButton(
     isEngineOn: Boolean,
     onLongPressOverOneSecond: () -> Unit,
+    shapeVal: RoundedCornerShape,
     modifier: Modifier = Modifier,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -65,9 +66,6 @@ fun EngineStartButton(
 
     val baseColor = MaterialTheme.colorScheme.primaryContainer
     val progressColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.32f)
-
-    // МЕНЬШЕ СКРУГЛЕНИЕ — ближе к эталону и не “пузырь”
-    val shape = RoundedCornerShape(18.dp)
 
     val flashProgress = remember { Animatable(0f) }
     val flashAlpha = (1f - flashProgress.value) * 0.18f
@@ -113,7 +111,7 @@ fun EngineStartButton(
         modifier = modifier
             .fillMaxWidth()
             .height(buttonHeight)
-            .clip(shape),
+            .clip(shapeVal),
         contentAlignment = Alignment.Center,
     ) {
         Box(

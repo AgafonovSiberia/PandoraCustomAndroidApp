@@ -36,7 +36,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import com.pandorawear.mobile.R
 import com.pandorawear.mobile.models.AlarmDeviceUiModel
 import kotlin.math.max
@@ -134,7 +136,7 @@ private fun HeroCard(
     val shape = MaterialTheme.shapes.extraLarge
 
     val base = cs.surfaceContainerHigh
-    val blue = cs.primary.copy(alpha = 0.26f) // чуть ярче под эталон
+    val blue = cs.primary.copy(alpha = 0.12f) // чуть ярче под эталон
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -167,7 +169,7 @@ private fun HeroCard(
                 tint = cs.onSurface.copy(alpha = 0.20f),
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .offset(x = 64.dp, y = 28.dp)
+                    .offset(x = 50.dp, y = 28.dp)
                     .graphicsLayer(
                         scaleX = 1.35f,
                         scaleY = 1.35f
@@ -232,7 +234,7 @@ private fun QuickActionsRow(
     onEngineConfirmed: () -> Unit,
 ) {
     val tileHeight = 50.dp
-
+    val shape = RoundedCornerShape(10.dp)
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -241,6 +243,7 @@ private fun QuickActionsRow(
         EngineStartButton(
             isEngineOn = isEngineOn,
             onLongPressOverOneSecond = onEngineConfirmed,
+            shapeVal = shape,
             modifier = Modifier
                 .weight(1f)
                 .height(tileHeight),
@@ -250,6 +253,7 @@ private fun QuickActionsRow(
             title = "Снять",
             iconRes = R.drawable.cabin_temp_icon_512_vector,
             height = tileHeight,
+            shapeVal = shape,
             modifier = Modifier.weight(1f),
         )
 
@@ -257,6 +261,7 @@ private fun QuickActionsRow(
             title = "Багажник",
             iconRes = R.drawable.cabin_temp_icon_512_vector,
             height = tileHeight,
+            shapeVal = shape,
             modifier = Modifier.weight(1f),
         )
     }
@@ -267,13 +272,14 @@ private fun QuickActionStub(
     title: String,
     iconRes: Int,
     height: Dp,
+    shapeVal: RoundedCornerShape,
     modifier: Modifier = Modifier,
 ) {
-    val shape = RoundedCornerShape(18.dp)
+
 
     Surface(
         modifier = modifier.height(height),
-        shape = shape,
+        shape = shapeVal,
         color = MaterialTheme.colorScheme.surfaceContainer,
     ) {
         Row(
@@ -307,26 +313,32 @@ private fun MetricsGrid(
     cabinTemp: Double,
     engineTemp: Double,
 ) {
+    val bigHeight = 110.dp
+    val smallHeight = 92.dp
+
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        // 🔹 ПЕРВЫЙ РЯД — БОЛЬШЕ
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             MetricCard(
                 title = "АКБ",
                 value = String.format("%.1fV", batteryVoltage),
                 iconRes = R.drawable.battery_icon_512_vector,
                 accent = MetricAccent.Blue,
+                height = bigHeight,
                 modifier = Modifier.weight(1f),
             )
             MetricCard(
                 title = "Топливо",
-                value = "$fuel",
+                value = "$fuel%",
                 iconRes = R.drawable.fuel_icon_512_vector,
                 accent = MetricAccent.BlueSoft,
+                height = bigHeight,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -340,6 +352,7 @@ private fun MetricsGrid(
                 value = "$cabinTemp°",
                 iconRes = R.drawable.cabin_temp_icon_512_vector,
                 accent = MetricAccent.Warm,
+                height = smallHeight,
                 modifier = Modifier.weight(1f),
             )
             MetricCard(
@@ -347,6 +360,7 @@ private fun MetricsGrid(
                 value = "$engineTemp°",
                 iconRes = R.drawable.engine_temp_icon_512_vector,
                 accent = MetricAccent.Blue,
+                height = smallHeight,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -365,6 +379,7 @@ private fun MetricCard(
     value: String,
     iconRes: Int,
     accent: MetricAccent,
+    height: Dp,
     modifier: Modifier = Modifier,
 ) {
     val cs = MaterialTheme.colorScheme
@@ -390,7 +405,7 @@ private fun MetricCard(
             modifier = Modifier
                 .clip(shape)
                 .background(base)
-                .height(92.dp)
+                .height(height)
         ) {
             // 1) global soft shading (full card area)
             Glow(
@@ -422,7 +437,7 @@ private fun MetricCard(
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(14.dp),
+                    .padding(16.dp),
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
@@ -438,7 +453,7 @@ private fun MetricCard(
                         text = value,
                         style = MaterialTheme.typography.headlineSmall,
                         color = cs.onSurface,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.ExtraBold,
                         maxLines = 1,
                     )
                 }
@@ -447,7 +462,7 @@ private fun MetricCard(
                     painter = painterResource(iconRes),
                     contentDescription = null,
                     tint = cs.onSurfaceVariant,
-                    modifier = Modifier.size(30.dp),
+                    modifier = Modifier.size(50.dp),
                 )
             }
         }
