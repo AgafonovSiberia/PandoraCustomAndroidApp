@@ -13,7 +13,7 @@ val BluePrimaryDark = Color(0xFF2E54B8)
 val BlueSecondary = Color(0xFF6A8DF3)
 
 // Core surfaces (dark)
-val BackgroundDark = Color(0xFF0F1115)          // app background
+val BackgroundDark = Color(0xFF1d1d1f)          // app background
 val SurfaceDark = Color(0xFF14171C)             // base surface
 val SurfaceVariantDark = Color(0xFF1A1D23)      // variant (chips etc.)
 
