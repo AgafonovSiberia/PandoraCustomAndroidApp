@@ -18,27 +18,23 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.foundation.Canvas
-import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import com.pandorawear.mobile.R
 import com.pandorawear.mobile.models.AlarmDeviceUiModel
 import kotlin.math.max
@@ -75,7 +71,7 @@ fun DeviceDashboardCard(
         )
 
         QuickActionsRow(
-            isEngineOn = device.engineRpm > 0,
+            device = device,
             onEngineConfirmed = onEngineConfirmed,
         )
     }
@@ -110,7 +106,7 @@ private fun TopHeader(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.cabin_temp_icon_512_vector),
+                    imageVector = Icons.Default.Lock,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(16.dp),
@@ -133,7 +129,7 @@ private fun HeroCard(
     lastSyncAtEpochMs: Long?,
 ) {
     val cs = MaterialTheme.colorScheme
-    val shape = MaterialTheme.shapes.extraLarge
+    val shape = MaterialTheme.shapes.large
 
     val base = cs.surfaceContainerHigh
     val blue = cs.primary.copy(alpha = 0.12f) // чуть ярче под эталон
@@ -230,7 +226,7 @@ private fun HeroCard(
 
 @Composable
 private fun QuickActionsRow(
-    isEngineOn: Boolean,
+    device: AlarmDeviceUiModel,
     onEngineConfirmed: () -> Unit,
 ) {
     val tileHeight = 50.dp
@@ -241,7 +237,7 @@ private fun QuickActionsRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         EngineStartButton(
-            isEngineOn = isEngineOn,
+            isEngineOn = device.engineRpm > 0,
             onLongPressOverOneSecond = onEngineConfirmed,
             shapeVal = shape,
             modifier = Modifier
@@ -250,27 +246,20 @@ private fun QuickActionsRow(
         )
 
         QuickActionStub(
-            title = "Снять",
-            iconRes = R.drawable.cabin_temp_icon_512_vector,
+            title = if (device.isArmed) "UNLOCK" else "LOCK",
+            iconRes = Icons.Default.Lock,
             height = tileHeight,
             shapeVal = shape,
             modifier = Modifier.weight(1f),
         )
 
-        QuickActionStub(
-            title = "Багажник",
-            iconRes = R.drawable.cabin_temp_icon_512_vector,
-            height = tileHeight,
-            shapeVal = shape,
-            modifier = Modifier.weight(1f),
-        )
     }
 }
 
 @Composable
 private fun QuickActionStub(
     title: String,
-    iconRes: Int,
+    iconRes: ImageVector,
     height: Dp,
     shapeVal: RoundedCornerShape,
     modifier: Modifier = Modifier,
@@ -287,10 +276,10 @@ private fun QuickActionStub(
                 .fillMaxWidth()
                 .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            horizontalArrangement = Arrangement.Center,
         ) {
             Icon(
-                painter = painterResource(iconRes),
+                imageVector = iconRes,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(22.dp),
@@ -337,7 +326,7 @@ private fun MetricsGrid(
                 title = "Топливо",
                 value = "$fuel%",
                 iconRes = R.drawable.fuel_icon_512_vector,
-                accent = MetricAccent.BlueSoft,
+                accent = MetricAccent.Blue,
                 height = bigHeight,
                 modifier = Modifier.weight(1f),
             )
@@ -359,7 +348,7 @@ private fun MetricsGrid(
                 title = "Темп. двигателя",
                 value = "$engineTemp°",
                 iconRes = R.drawable.engine_temp_icon_512_vector,
-                accent = MetricAccent.Blue,
+                accent = MetricAccent.Warm,
                 height = smallHeight,
                 modifier = Modifier.weight(1f),
             )
@@ -383,14 +372,14 @@ private fun MetricCard(
     modifier: Modifier = Modifier,
 ) {
     val cs = MaterialTheme.colorScheme
-    val shape = MaterialTheme.shapes.extraLarge
+    val shape = MaterialTheme.shapes.large
 
     val base = cs.surfaceContainer
 
     // brighter glows (closer to reference)
     val blueStrong = cs.primary.copy(alpha = 0.34f)
     val blueMid = cs.primary.copy(alpha = 0.22f)
-    val blueSoft = cs.primary.copy(alpha = 0.14f)
+    val blueSoft = cs.primary.copy(alpha = 0.19f)
 
     // warm accent (subtle amber)
     val warm = Color(0xFFFFB45C).copy(alpha = 0.18f)
@@ -422,7 +411,8 @@ private fun MetricCard(
                 }
 
                 MetricAccent.BlueSoft -> {
-                    Glow(color = blueSoft, center = Offset(980f, -280f), radius = 1180f)
+                    Glow(color = blueStrong, center = Offset(980f, -200f), radius = 890f)
+                    Glow(color = blueMid, center = Offset(980f, 320f), radius = 730f)
                 }
 
                 MetricAccent.Warm -> {
@@ -462,7 +452,7 @@ private fun MetricCard(
                     painter = painterResource(iconRes),
                     contentDescription = null,
                     tint = cs.onSurfaceVariant,
-                    modifier = Modifier.size(50.dp),
+                    modifier = Modifier.size(70.dp),
                 )
             }
         }

@@ -64,8 +64,15 @@ fun EngineStartButton(
         label = "scale"
     )
 
-    val baseColor = MaterialTheme.colorScheme.primaryContainer
-    val progressColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.32f)
+    val cs = MaterialTheme.colorScheme
+
+    val baseColor = if (isEngineOn) cs.error else cs.primaryContainer
+
+    val contentColor = if (isEngineOn) cs.onError.copy(alpha = 0.66f) else cs.onPrimaryContainer
+
+    val progressLight = contentColor.copy(alpha = 0.16f)
+
+    val progressTint = if (isEngineOn) cs.errorContainer.copy(alpha = 0.22f) else cs.primary.copy(alpha = 0.18f)
 
     val flashProgress = remember { Animatable(0f) }
     val flashAlpha = (1f - flashProgress.value) * 0.18f
@@ -86,6 +93,8 @@ fun EngineStartButton(
                     onLongPressOverOneSecond()
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     flashToken++
+
+                    isPressed = false
                     break
                 }
                 delay(16)
@@ -114,9 +123,10 @@ fun EngineStartButton(
             .clip(shapeVal),
         contentAlignment = Alignment.Center,
     ) {
+        // flash overlay
         Box(
             modifier = Modifier
-                .matchParentSize()
+                .fillMaxSize()
                 .graphicsLayer(
                     scaleX = flashScale,
                     scaleY = flashScale,
@@ -125,9 +135,10 @@ fun EngineStartButton(
                 .background(MaterialTheme.colorScheme.primary)
         )
 
+        // main button layer
         Box(
             modifier = Modifier
-                .matchParentSize()
+                .fillMaxSize()
                 .graphicsLayer(scaleX = scale, scaleY = scale)
                 .background(baseColor)
                 .pointerInput(Unit) {
@@ -143,20 +154,23 @@ fun EngineStartButton(
         ) {
             Box(
                 modifier = Modifier
-                    .matchParentSize()
-                    .background(progressColor)
+                    .fillMaxSize()
                     .graphicsLayer(
                         scaleX = progress.value,
+                        scaleY = 1f,
                         transformOrigin = TransformOrigin(0f, 0.5f)
                     )
-            )
+            ) {
+                Box(modifier = Modifier.fillMaxSize().background(progressLight))
+                Box(modifier = Modifier.fillMaxSize().background(progressTint))
+            }
 
             Row(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.Center,
             ) {
                 Icon(
                     painter = if (isEngineOn)
@@ -164,15 +178,15 @@ fun EngineStartButton(
                     else
                         painterResource(R.drawable.engine_start_fan_512_vector),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    tint = contentColor,
                     modifier = Modifier.size(26.dp),
                 )
 
                 Text(
-                    text = if (isEngineOn) "Запущен" else "Запуск",
+                    text = if (isEngineOn) "STOP" else "START",
                     style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    fontWeight = FontWeight.SemiBold,
+                    color = contentColor,
+                    fontWeight = FontWeight.ExtraBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
