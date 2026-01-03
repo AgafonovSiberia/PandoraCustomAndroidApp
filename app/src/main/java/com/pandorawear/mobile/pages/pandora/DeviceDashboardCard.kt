@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -17,17 +18,24 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pandorawear.mobile.R
 import com.pandorawear.mobile.models.AlarmDeviceUiModel
@@ -57,16 +65,16 @@ fun DeviceDashboardCard(
             lastSyncAtEpochMs = lastSyncAtEpochMs,
         )
 
-        QuickActionsRow(
-            isEngineOn = device.engineRpm > 0,
-            onEngineConfirmed = onEngineConfirmed,
-        )
-
         MetricsGrid(
             batteryVoltage = device.batteryVoltage,
             fuel = device.fuelTank,
             cabinTemp = device.cabinTemp,
             engineTemp = device.engineTemp,
+        )
+
+        QuickActionsRow(
+            isEngineOn = device.engineRpm > 0,
+            onEngineConfirmed = onEngineConfirmed,
         )
     }
 }
@@ -125,9 +133,8 @@ private fun HeroCard(
     val cs = MaterialTheme.colorScheme
     val shape = MaterialTheme.shapes.extraLarge
 
-    // Ближе к эталону: тёмная база + “свет” справа в голубой
     val base = cs.surfaceContainerHigh
-    val blue = cs.primary.copy(alpha = 0.22f)
+    val blue = cs.primary.copy(alpha = 0.26f) // чуть ярче под эталон
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -137,10 +144,11 @@ private fun HeroCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(176.dp)
+                .height(200.dp)
                 .clip(shape)
                 .background(base)
         ) {
+            // right glow
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -156,10 +164,14 @@ private fun HeroCard(
             Icon(
                 painter = painterResource(R.drawable.freelander_vector),
                 contentDescription = null,
-                tint = cs.onSurface.copy(alpha = 0.16f),
+                tint = cs.onSurface.copy(alpha = 0.20f),
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .offset(x = 24.dp, y = 12.dp)
+                    .offset(x = 64.dp, y = 28.dp)
+                    .graphicsLayer(
+                        scaleX = 1.35f,
+                        scaleY = 1.35f
+                    )
                     .width(340.dp)
                     .height(220.dp),
             )
@@ -219,7 +231,7 @@ private fun QuickActionsRow(
     isEngineOn: Boolean,
     onEngineConfirmed: () -> Unit,
 ) {
-    val tileHeight = 72.dp
+    val tileHeight = 50.dp
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -254,10 +266,9 @@ private fun QuickActionsRow(
 private fun QuickActionStub(
     title: String,
     iconRes: Int,
-    height: androidx.compose.ui.unit.Dp,
+    height: Dp,
     modifier: Modifier = Modifier,
 ) {
-    // МЕНЬШЕ СКРУГЛЕНИЕ: убираем “пузырь”
     val shape = RoundedCornerShape(18.dp)
 
     Surface(
@@ -308,14 +319,14 @@ private fun MetricsGrid(
                 title = "АКБ",
                 value = String.format("%.1fV", batteryVoltage),
                 iconRes = R.drawable.battery_icon_512_vector,
-                accent = true,
+                accent = MetricAccent.Blue,
                 modifier = Modifier.weight(1f),
             )
             MetricCard(
                 title = "Топливо",
                 value = "$fuel",
                 iconRes = R.drawable.fuel_icon_512_vector,
-                accent = false,
+                accent = MetricAccent.BlueSoft,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -328,78 +339,90 @@ private fun MetricsGrid(
                 title = "Темп. салона",
                 value = "$cabinTemp°",
                 iconRes = R.drawable.cabin_temp_icon_512_vector,
-                accent = false,
+                accent = MetricAccent.Warm,
                 modifier = Modifier.weight(1f),
             )
             MetricCard(
                 title = "Темп. двигателя",
                 value = "$engineTemp°",
                 iconRes = R.drawable.engine_temp_icon_512_vector,
-                accent = true,
+                accent = MetricAccent.Blue,
                 modifier = Modifier.weight(1f),
             )
         }
     }
 }
 
+/**
+ * We use “glow recipes” rather than a single gradient fill.
+ * This removes the “rectangle overlay” artifact and matches the reference look.
+ */
+private enum class MetricAccent { Blue, BlueSoft, Warm, None }
+
 @Composable
 private fun MetricCard(
     title: String,
     value: String,
     iconRes: Int,
-    accent: Boolean,
+    accent: MetricAccent,
     modifier: Modifier = Modifier,
 ) {
     val cs = MaterialTheme.colorScheme
     val shape = MaterialTheme.shapes.extraLarge
 
-    // Убираем “прямоугольники”:
-    // 1) мягкий общий градиент ВСЕМ карточкам (почти незаметный)
-    // 2) акцент — дополнительный мягкий подсвет, центр вынесен за границы, радиус большой
     val base = cs.surfaceContainer
-    val softTop = cs.onSurface.copy(alpha = 0.035f)
-    val blue = cs.primary.copy(alpha = if (accent) 0.14f else 0.08f)
+
+    // brighter glows (closer to reference)
+    val blueStrong = cs.primary.copy(alpha = 0.34f)
+    val blueMid = cs.primary.copy(alpha = 0.22f)
+    val blueSoft = cs.primary.copy(alpha = 0.14f)
+
+    // warm accent (subtle amber)
+    val warm = Color(0xFFFFB45C).copy(alpha = 0.18f)
 
     Card(
         modifier = modifier,
         shape = shape,
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
     ) {
+        // IMPORTANT: NO padding on the layer that hosts the glows
         Box(
             modifier = Modifier
                 .clip(shape)
                 .background(base)
                 .height(92.dp)
-                .padding(14.dp),
         ) {
-            // общий “воздух” (не должен читаться как отдельный прямоугольник)
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(softTop, Color.Transparent),
-                            start = Offset(0f, 0f),
-                            end = Offset(0f, 500f),
-                        )
-                    )
+            // 1) global soft shading (full card area)
+            Glow(
+                color = cs.onSurface.copy(alpha = 0.05f),
+                center = Offset(180f, -120f),
+                radius = 760f
             )
 
-            // голубой подсвет справа сверху, но без жёстких краёв
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(blue, Color.Transparent),
-                            center = Offset(850f, -120f),
-                            radius = 900f
-                        )
-                    )
-            )
+            // 2) accent glows (full card area; centers outside bounds to avoid edges)
+            when (accent) {
+                MetricAccent.Blue -> {
+                    Glow(color = blueStrong, center = Offset(980f, -260f), radius = 1180f)
+                    Glow(color = blueMid, center = Offset(980f, 520f), radius = 980f)
+                }
 
+                MetricAccent.BlueSoft -> {
+                    Glow(color = blueSoft, center = Offset(980f, -280f), radius = 1180f)
+                }
+
+                MetricAccent.Warm -> {
+                    Glow(color = warm, center = Offset(-240f, 520f), radius = 980f)
+                    Glow(color = blueSoft, center = Offset(980f, -300f), radius = 1180f)
+                }
+
+                MetricAccent.None -> Unit
+            }
+
+            // 3) content padding goes here (separate layer)
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(14.dp),
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
@@ -430,6 +453,26 @@ private fun MetricCard(
         }
     }
 }
+
+@Composable
+private fun Glow(
+    color: Color,
+    center: Offset,
+    radius: Float,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                Brush.radialGradient(
+                    colors = listOf(color, Color.Transparent),
+                    center = center,
+                    radius = radius
+                )
+            )
+    )
+}
+
 
 private fun formatRelativeTime(lastSyncAtEpochMs: Long?): String? {
     if (lastSyncAtEpochMs == null) return null

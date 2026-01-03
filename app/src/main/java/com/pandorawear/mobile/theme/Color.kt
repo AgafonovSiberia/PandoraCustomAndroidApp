@@ -14,7 +14,7 @@ val BluePrimary = Color(0xFF3B6EF2)          // main accent (tabs, highlights)
 val BluePrimaryContainer = Color(0xFF2B56D6) // containers (READY pill, engine btn base)
 
 // Supporting neutrals (cool dark)
-val BackgroundDark = Color(0xFF0B0F14)
+val BackgroundDark = Color(0xFF161617)
 val SurfaceDark = Color(0xFF11161D)
 val SurfaceVariantDark = Color(0xFF171D26)
 
