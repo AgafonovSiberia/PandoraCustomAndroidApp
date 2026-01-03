@@ -5,9 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -56,19 +56,17 @@ fun DeviceDashboardCard(
             lastSyncAtEpochMs = lastSyncAtEpochMs,
         )
 
+        QuickActionsRow(
+            isEngineOn = device.engineRpm > 0,
+            onEngineConfirmed = onEngineConfirmed,
+        )
+
         MetricsGrid(
             batteryVoltage = device.batteryVoltage,
             fuel = device.fuelTank,
             cabinTemp = device.cabinTemp,
             engineTemp = device.engineTemp,
         )
-
-        QuickActions(
-            isEngineOn = device.engineRpm > 0,
-            onEngineConfirmed = onEngineConfirmed,
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
     }
 }
 
@@ -82,15 +80,14 @@ private fun TopHeader(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
 
         Surface(
             shape = RoundedCornerShape(10.dp),
@@ -101,9 +98,8 @@ private fun TopHeader(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                // Если lock-иконки нет физически — оставляем как есть (ты мог удалить).
                 Icon(
-                    painter = painterResource(R.drawable.fuel_icon_512_vector),
+                    painter = painterResource(R.drawable.cabin_temp_icon_512_vector),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(16.dp),
@@ -125,17 +121,13 @@ private fun HeroCard(
     isEngineOn: Boolean,
     lastSyncAtEpochMs: Long?,
 ) {
-    val shape = MaterialTheme.shapes.extraLarge
     val cs = MaterialTheme.colorScheme
+    val shape = MaterialTheme.shapes.extraLarge
 
-    // Градиент “как в эталоне”: тёмная база + уход в голубой оттенок справа/сверху
-    val heroBrush = Brush.linearGradient(
-        listOf(
-            cs.surfaceContainerHigh,
-            cs.surfaceContainer,
-            cs.primary.copy(alpha = 0.12f),
-        )
-    )
+    // ЭТАЛОННЫЙ ХАРАКТЕР: тёмная база + справа голубой “свет” + чуть сверху.
+    // Не полагаемся на тему: добавляем controlled glow прямо здесь.
+    val blueGlow = cs.primary.copy(alpha = 0.22f)
+    val heroBase = cs.surfaceContainerHigh
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -145,24 +137,53 @@ private fun HeroCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(170.dp)
+                .height(176.dp)
                 .clip(shape)
-                .background(heroBrush)
-                .padding(16.dp)
+                .background(heroBase)
         ) {
-            // Силуэт авто — крупнее и ближе к эталону
+            // Мягкий голубой градиент справа (как в эталоне)
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(blueGlow, Color.Transparent),
+                            center = androidx.compose.ui.geometry.Offset(950f, 180f),
+                            radius = 950f
+                        )
+                    )
+            )
+
+            // Лёгкий верхний засвет (чтобы “воздух” появился)
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(cs.onSurface.copy(alpha = 0.06f), Color.Transparent),
+                            center = androidx.compose.ui.geometry.Offset(180f, 0f),
+                            radius = 700f
+                        )
+                    )
+            )
+
+            // 1) Автомобиль: делаем КРУПНЕЕ и “вылетающим” за края карточки
+            //    чтобы он читался как доминанта как в эталоне.
             Icon(
                 painter = painterResource(R.drawable.freelander_vector),
                 contentDescription = null,
-                tint = cs.onSurface.copy(alpha = 0.14f),
+                tint = cs.onSurface.copy(alpha = 0.16f),
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .width(280.dp)
-                    .height(190.dp),
+                    .align(Alignment.CenterEnd)
+                    .offset(x = 24.dp, y = 12.dp)
+                    .width(340.dp)
+                    .height(220.dp),
             )
 
             Column(
-                modifier = Modifier.align(Alignment.TopStart),
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text(
@@ -185,11 +206,15 @@ private fun HeroCard(
                     },
                     style = MaterialTheme.typography.bodySmall,
                     color = cs.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
 
             Surface(
-                modifier = Modifier.align(Alignment.TopEnd),
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp),
                 shape = RoundedCornerShape(999.dp),
                 color = cs.primaryContainer,
             ) {
@@ -206,32 +231,43 @@ private fun HeroCard(
 }
 
 @Composable
-private fun QuickActions(
+private fun QuickActionsRow(
     isEngineOn: Boolean,
     onEngineConfirmed: () -> Unit,
 ) {
-    // Делаем quick actions ниже: 76dp + убираем подписи снизу (как в эталоне)
+    // 2) Кнопки должны делить пространство поровну.
+    //    Делаем 3 равные “плитки” одинаковой высоты.
+    val tileHeight = 72.dp
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Engine — шире (2x), чтобы текст не ломался и выглядел как primary action
-        EngineStartButton(
-            isEngineOn = isEngineOn,
-            onLongPressOverOneSecond = onEngineConfirmed,
-            modifier = Modifier.weight(2f),
-        )
+        // Engine tile (long press)
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(tileHeight)
+        ) {
+            EngineStartButton(
+                isEngineOn = isEngineOn,
+                onLongPressOverOneSecond = onEngineConfirmed,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
 
         QuickActionStub(
             title = "Снять",
-            iconRes = R.drawable.cabin_temp_icon_512_vector, // заглушка — ресурс можно заменить
+            iconRes = R.drawable.fuel_icon_512_vector,
+            height = tileHeight,
             modifier = Modifier.weight(1f),
         )
 
         QuickActionStub(
             title = "Багажник",
-            iconRes = R.drawable.cabin_temp_icon_512_vector, // заглушка — ресурс можно заменить
+            iconRes = R.drawable.fuel_icon_512_vector,
+            height = tileHeight,
             modifier = Modifier.weight(1f),
         )
     }
@@ -241,17 +277,18 @@ private fun QuickActions(
 private fun QuickActionStub(
     title: String,
     iconRes: Int,
+    height: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier,
 ) {
     Surface(
-        modifier = modifier.height(76.dp),
+        modifier = modifier.height(height),
         shape = MaterialTheme.shapes.extraLarge,
         color = MaterialTheme.colorScheme.surfaceContainer,
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp),
+                .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
@@ -291,17 +328,18 @@ private fun MetricsGrid(
                 title = "АКБ",
                 value = String.format("%.1fV", batteryVoltage),
                 iconRes = R.drawable.battery_icon_512_vector,
-                accent = true,
+                accentCorner = true,
                 modifier = Modifier.weight(1f),
             )
             MetricCard(
                 title = "Топливо",
                 value = "$fuel",
                 iconRes = R.drawable.fuel_icon_512_vector,
-                accent = false,
+                accentCorner = false,
                 modifier = Modifier.weight(1f),
             )
         }
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -310,14 +348,14 @@ private fun MetricsGrid(
                 title = "Темп. салона",
                 value = "$cabinTemp°",
                 iconRes = R.drawable.cabin_temp_icon_512_vector,
-                accent = false,
+                accentCorner = false,
                 modifier = Modifier.weight(1f),
             )
             MetricCard(
                 title = "Темп. двигателя",
                 value = "$engineTemp°",
                 iconRes = R.drawable.engine_temp_icon_512_vector,
-                accent = true,
+                accentCorner = true,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -329,24 +367,15 @@ private fun MetricCard(
     title: String,
     value: String,
     iconRes: Int,
-    accent: Boolean,
+    accentCorner: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val cs = MaterialTheme.colorScheme
     val shape = MaterialTheme.shapes.extraLarge
 
-    // Лёгкий “голубой” градиент на акцентных карточках, как в эталоне
-    val bgBrush = if (accent) {
-        Brush.linearGradient(
-            listOf(
-                cs.surfaceContainer,
-                cs.surfaceContainerHigh,
-                cs.primary.copy(alpha = 0.10f),
-            )
-        )
-    } else {
-        Brush.linearGradient(listOf(cs.surfaceContainer, cs.surfaceContainer))
-    }
+    // 4) Градиенты ближе к эталону: базовая тёмная карточка + голубой “угол” на части карточек
+    val base = cs.surfaceContainer
+    val glow = cs.primary.copy(alpha = if (accentCorner) 0.18f else 0.10f)
 
     Card(
         modifier = modifier,
@@ -356,43 +385,64 @@ private fun MetricCard(
         Box(
             modifier = Modifier
                 .clip(shape)
-                .background(bgBrush)
+                .background(base)
+                .height(92.dp)
                 .padding(14.dp),
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
+            // мягкий голубой “угол” (как у эталона, без кричащих цветов)
+            if (accentCorner) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(
+                            Brush.radialGradient(
+                                colors = listOf(glow, Color.Transparent),
+                                center = androidx.compose.ui.geometry.Offset(650f, 0f),
+                                radius = 650f
+                            )
+                        )
+                )
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = title,
                         style = MaterialTheme.typography.labelLarge,
                         color = cs.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
-
-                    // Иконка: фон светлее + иконка крупнее (это твой пункт №2)
-                    Surface(
-                        shape = RoundedCornerShape(14.dp),
-                        color = cs.surfaceContainerHighest,
-                    ) {
-                        Icon(
-                            painter = painterResource(iconRes),
-                            contentDescription = null,
-                            tint = cs.onSurfaceVariant,
-                            modifier = Modifier
-                                .padding(8.dp)
-                                .size(22.dp),
-                        )
-                    }
+                    Text(
+                        text = value,
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = cs.onSurface,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                    )
                 }
 
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = cs.onSurface,
-                    fontWeight = FontWeight.SemiBold,
-                )
+                // 3) Иконки: фон НЕ должен бросаться в глаза, а сама иконка должна быть больше.
+                //    Поэтому:
+                //    - фон делаем еле заметным (onSurface alpha 0.05)
+                //    - иконку увеличиваем до 30dp
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = cs.onSurface.copy(alpha = 0.05f),
+                ) {
+                    Icon(
+                        painter = painterResource(iconRes),
+                        contentDescription = null,
+                        tint = cs.onSurfaceVariant,
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .size(30.dp),
+                    )
+                }
             }
         }
     }

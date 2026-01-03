@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,10 +34,19 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.pandorawear.mobile.R
 import kotlinx.coroutines.delay
 
+/**
+ * Single dynamic engine button:
+ * - Start / Stop depending on isEngineOn
+ * - Confirm via hold 2s
+ * - Progress fill left->right
+ *
+ * Important: DO NOT enforce minWidth here; parent Row weights should control size.
+ */
 @Composable
 fun EngineStartButton(
     isEngineOn: Boolean,
@@ -51,10 +59,9 @@ fun EngineStartButton(
     var hasTriggered by remember { mutableStateOf(false) }
     var flashToken by remember { mutableIntStateOf(0) }
 
-    val buttonHeight = 76.dp
     val longPressDurationMs = 2000
-
     val progress = remember { Animatable(0f) }
+
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 0.985f else 1f,
         animationSpec = tween(durationMillis = 120, easing = FastOutSlowInEasing),
@@ -66,8 +73,8 @@ fun EngineStartButton(
     val shape = MaterialTheme.shapes.extraLarge
 
     val flashProgress = remember { Animatable(0f) }
-    val flashAlpha = (1f - flashProgress.value) * 0.20f
-    val flashScale = 1f + flashProgress.value * 0.16f
+    val flashAlpha = (1f - flashProgress.value) * 0.18f
+    val flashScale = 1f + flashProgress.value * 0.14f
 
     LaunchedEffect(isPressed) {
         if (isPressed) {
@@ -108,7 +115,7 @@ fun EngineStartButton(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(buttonHeight),
+            .clip(shape),
         contentAlignment = Alignment.Center,
     ) {
         Box(
@@ -119,7 +126,6 @@ fun EngineStartButton(
                     scaleY = flashScale,
                     alpha = flashAlpha,
                 )
-                .clip(shape)
                 .background(MaterialTheme.colorScheme.primary)
         )
 
@@ -127,7 +133,6 @@ fun EngineStartButton(
             modifier = Modifier
                 .matchParentSize()
                 .graphicsLayer(scaleX = scale, scaleY = scale)
-                .clip(shape)
                 .background(baseColor)
                 .pointerInput(Unit) {
                     detectTapGestures(
@@ -153,7 +158,7 @@ fun EngineStartButton(
             Row(
                 modifier = Modifier
                     .matchParentSize()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
@@ -164,15 +169,16 @@ fun EngineStartButton(
                         painterResource(R.drawable.engine_start_fan_512_vector),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(30.dp),
+                    modifier = Modifier.size(26.dp),
                 )
 
                 Text(
-                    text = if (isEngineOn) "Остановить" else "Запуск",
-                    style = MaterialTheme.typography.titleSmall,
+                    text = if (isEngineOn) "Стоп" else "Запуск",
+                    style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }
