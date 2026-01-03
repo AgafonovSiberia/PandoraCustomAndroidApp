@@ -1,4 +1,5 @@
 # PandoraCustomAndroidApp
+<img src="assets/Main.jpg" alt="MobileApp" width="195" height="385">
 
 **PandoraCustomAndroidApp** — это решение для Android и Wear OS, разработанное для взаимодействия с охранными системами Pandora через собственный сервис [PandoraCustomAPIServer](https://github.com/AgafonovSiberia/PandoraCustomApiServer).
 Это **кастомный** клиент, позволяющий пользователям отслеживать, контролировать и управлять своими устройствами Pandora прямо со смартфона или смарт-часов.
@@ -71,10 +72,11 @@ PANDORA_STORE_PASSWORD=пароль_хранилища
     *   Выберите эмулятор Wear OS или подключенные часы.
     *   Нажмите Run.
 
-![MobileApp](assets/Main.jpg "MobileApp")
 ![PairByCode](assets/PairByCode.jpg "PairByCode")
 ![PairByCred](assets/PairByCred.jpg "PairByCred")
 ![ConnectServer](assets/ConnectServer.jpg "ConnectServer")
+
+
 
 ## Отказ от ответственности
 Данное программное обеспечение никак не связано и не одобрено ООО «НПО Телеметрия», владельца торговой марки Pandora.
