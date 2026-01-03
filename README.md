@@ -1,5 +1,6 @@
 # PandoraCustomAndroidApp
 <img src="assets/Main.jpg" alt="MobileApp" width="195" height="385">
+<img src="assets/PairByCred.jpg" alt="PairByCred" width="195" height="385">
 
 **PandoraCustomAndroidApp** — это решение для Android и Wear OS, разработанное для взаимодействия с охранными системами Pandora через собственный сервис [PandoraCustomAPIServer](https://github.com/AgafonovSiberia/PandoraCustomApiServer).
 Это **кастомный** клиент, позволяющий пользователям отслеживать, контролировать и управлять своими устройствами Pandora прямо со смартфона или смарт-часов.
@@ -21,7 +22,7 @@
 На текущий момент доступна только команда запуска/остановки двигателя
 
 *  **Интеграция с Wear OS.**
-Приложение использует `WearBridgeService` для прослушивания событий привязки и синхронизации данных.
+Приложение использует `WearBridgeService` для прослушивания событий и синхронизации данных.
 Приложение для часов не является автономным. Для доступа к API и сложной настройки используется приложение-компаньон на смартфоне.
 
 
@@ -71,10 +72,6 @@ PANDORA_STORE_PASSWORD=пароль_хранилища
     *   Выберите конфигурацию `wear`.
     *   Выберите эмулятор Wear OS или подключенные часы.
     *   Нажмите Run.
-
-![PairByCode](assets/PairByCode.jpg "PairByCode")
-![PairByCred](assets/PairByCred.jpg "PairByCred")
-![ConnectServer](assets/ConnectServer.jpg "ConnectServer")
 
 
 
