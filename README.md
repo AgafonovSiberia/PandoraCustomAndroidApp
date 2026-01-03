@@ -71,7 +71,10 @@ PANDORA_STORE_PASSWORD=пароль_хранилища
     *   Выберите эмулятор Wear OS или подключенные часы.
     *   Нажмите Run.
 
-
+![MobileApp](assets/Main.jpg "MobileApp")
+![PairByCode](assets/PairByCode.jpg "PairByCode")
+![PairByCred](assets/PairByCred.jpg "PairByCred")
+![ConnectServer](assets/ConnectServer.jpg "ConnectServer")
 
 ## Отказ от ответственности
 Данное программное обеспечение никак не связано и не одобрено ООО «НПО Телеметрия», владельца торговой марки Pandora.
