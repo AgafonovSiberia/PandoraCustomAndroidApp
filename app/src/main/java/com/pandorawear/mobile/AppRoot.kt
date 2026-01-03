@@ -43,7 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.pandorawear.mobile.infra.session.SessionEvents
 import com.pandorawear.mobile.pages.pandora.PandoraScreen
-import com.pandorawear.mobile.theme.SurfaceDarkLow
+import com.pandorawear.mobile.theme.SurfaceDark
 import com.pandorawear.mobile.BackendStatusStore
 
 enum class MainTab {
@@ -72,7 +72,7 @@ private fun BottomDockBar(
                 clip = true,
             )
             .background(
-                color = SurfaceDarkLow.copy(alpha = 0.85f),
+                color = SurfaceDark.copy(alpha = 0.85f),
                 shape = RoundedCornerShape(24.dp),
             )
     ) {
