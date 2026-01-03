@@ -17,6 +17,8 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeout
 import java.nio.charset.StandardCharsets
@@ -58,8 +60,8 @@ class WearPhoneGateway(
         moshi.adapter(CommandRequestPayload::class.java)
     }
 
-    private val pendingStatusRequests =
-        ConcurrentHashMap<String, CompletableDeferred<StatusResponsePayload>>()
+    private val _currentStatus = MutableStateFlow<WatchPandoraStatus?>(null)
+    override val currentStatus = _currentStatus.asStateFlow()
 
     private val pendingCommandRequests =
         ConcurrentHashMap<String, CompletableDeferred<CommandResponsePayload>>()
@@ -81,10 +83,8 @@ class WearPhoneGateway(
     private fun handleStatusResponse(messageEvent: MessageEvent) {
         val json = messageEvent.data.toString(StandardCharsets.UTF_8)
         val payload = statusResponseAdapter.fromJson(json) ?: return
-        val requestId = payload.requestId ?: return
-
-        val deferred = pendingStatusRequests.remove(requestId)
-        deferred?.complete(payload)
+        
+        _currentStatus.value = payload.status.toDomain()
     }
 
     private fun handleCommandResponse(messageEvent: MessageEvent) {
@@ -92,19 +92,21 @@ class WearPhoneGateway(
         val payload = commandResponseAdapter.fromJson(json) ?: return
         val requestId = payload.requestId ?: return
 
+        payload.status?.let {
+            _currentStatus.value = it.toDomain()
+        }
+
         val deferred = pendingCommandRequests.remove(requestId)
         deferred?.complete(payload)
     }
 
-    override suspend fun requestStatus(): Result<WatchPandoraStatus> {
+    override suspend fun tryRefreshStatus(): Result<Unit> {
         return runCatching {
             val nodeId = getOrResolvePhoneNodeId()
                 ?: throw IllegalStateException("Телефон не найден")
 
             val requestId = UUID.randomUUID().toString()
-            val deferred = CompletableDeferred<StatusResponsePayload>()
-            pendingStatusRequests[requestId] = deferred
-
+            
             val payload = StatusRequestPayload(
                 requestId = requestId,
             )
@@ -115,20 +117,8 @@ class WearPhoneGateway(
             messageClient
                 .sendMessage(nodeId, PhoneMessagePath.STATUS_GET, bytes)
                 .await()
-
-            val response = try {
-                withTimeout(timeoutMillis) {
-                    deferred.await()
-                }
-            } catch (e: TimeoutCancellationException) {
-                pendingStatusRequests.remove(requestId)
-                throw IllegalStateException("Request timeout", e)
-            }
-
-
-            val statusDto = response.status
-
-            statusDto.toDomain()
+            
+            Unit
         }
     }
 
@@ -151,7 +141,6 @@ class WearPhoneGateway(
                     PandoraCommand.STOP -> "STOP"
                 },
             )
-            Log.d("WearPhoneGateway", "sendCommand: command=${payload}, alarmDeviceId=$alarmDeviceId")
             val json = commandRequestAdapter.toJson(payload)
             val bytes = json.toByteArray(StandardCharsets.UTF_8)
 
@@ -159,7 +148,6 @@ class WearPhoneGateway(
                 .sendMessage(nodeId, PhoneMessagePath.COMMAND, bytes)
                 .await()
 
-            Log.d("WearPhoneGateway", "sendCommand: command=${payload}, alarmDeviceId=$alarmDeviceId")
             val response = try {
                 withTimeout(timeoutMillis) {
                     deferred.await()
@@ -176,8 +164,12 @@ class WearPhoneGateway(
 
             val statusDto = response.status
                 ?: throw IllegalStateException("Пустое поле status в ответе на команду")
+            
+            val domainStatus = statusDto.toDomain()
+            // Update cache here too just in case
+            _currentStatus.value = domainStatus
 
-            statusDto.toDomain()
+            domainStatus
         }
     }
 

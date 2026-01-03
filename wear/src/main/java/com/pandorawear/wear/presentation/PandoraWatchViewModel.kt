@@ -33,9 +33,31 @@ class PandoraWatchViewModel(
         if (pollingJob != null) return
 
         pollingJob = viewModelScope.launch {
-            while (true) {
-                refreshStatusOnce()
-                delay(pollingIntervalMillis)
+            // Subscribe to status updates
+            launch {
+                phoneGateway.currentStatus.collect { status ->
+                    if (status != null) {
+                        applyStatusFromPhone(status)
+                    }
+                }
+            }
+
+            // Start polling loop
+            launch {
+                while (true) {
+                    val result = phoneGateway.tryRefreshStatus()
+
+                    result.onFailure { error ->
+                        // Only show error if we have no data yet
+                        if (lastKnownStatus == null) {
+                            _uiState.value = PandoraWatchUiState.Error(
+                                message = error.message ?: "Нет связи с телефоном",
+                                lastKnownStatus = null,
+                            )
+                        }
+                    }
+                    delay(pollingIntervalMillis)
+                }
             }
         }
     }
@@ -73,28 +95,6 @@ class PandoraWatchViewModel(
             lastKnownStatus = lastKnownStatus,
             message = message,
         )
-    }
-
-
-    private suspend fun refreshStatusOnce() {
-        if (lastKnownStatus == null) {
-            _uiState.value = PandoraWatchUiState.Loading
-        }
-
-        val result = phoneGateway.requestStatus()
-
-        result
-            .onSuccess { status ->
-                applyStatusFromPhone(
-                    status = status
-                )
-            }
-            .onFailure { error ->
-                _uiState.value = PandoraWatchUiState.Error(
-                    message = error.message ?: "Нет связи с телефоном",
-                    lastKnownStatus = lastKnownStatus,
-                )
-            }
     }
 
     fun onCommandClicked(command: PandoraCommand) {
