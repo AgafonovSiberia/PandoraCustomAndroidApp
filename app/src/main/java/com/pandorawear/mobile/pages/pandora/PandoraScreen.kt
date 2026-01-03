@@ -24,6 +24,7 @@ data class PandoraUiState(
     val isLoading: Boolean = false,
     val devices: List<AlarmDeviceUiModel> = emptyList(),
     val error: String? = null,
+    val lastSyncAtEpochMs: Long? = null,
 )
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -56,12 +57,14 @@ fun PandoraScreen(
                     isLoading = false,
                     devices = devices,
                     error = null,
+                    lastSyncAtEpochMs = System.currentTimeMillis(),
                 )
             } catch (e: Exception) {
                 PandoraUiState(
                     isLoading = false,
                     devices = emptyList(),
                     error = e.message ?: "Ошибка загрузки устройств",
+                    lastSyncAtEpochMs = System.currentTimeMillis(),
                 )
             }
 
@@ -108,10 +111,11 @@ fun PandoraScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        DeviceCard(
+                        DeviceDashboardCard(
                             device = device,
+                            lastSyncAtEpochMs = uiState.lastSyncAtEpochMs,
                             onEngineConfirmed = {
-                                if (backendApiClient == null) return@DeviceCard
+                                if (backendApiClient == null) return@DeviceDashboardCard
 
                                 val action = if (device.engineRpm > 0) {
                                     AlarmActionDto.STOP
@@ -127,7 +131,10 @@ fun PandoraScreen(
                                         )
 
                                          val devices = backendApiClient.getDevices()
-                                         uiState = uiState.copy(devices = devices)
+                                         uiState = uiState.copy(
+                                             devices = devices,
+                                             lastSyncAtEpochMs = System.currentTimeMillis()
+                                         )
                                     } catch (e: Exception) {
                                         // TODO: повесим snackbar / toast позже
                                     }

@@ -125,12 +125,6 @@ fun DeviceCard(
             }
 
             Spacer(Modifier.height(60.dp))
-
-            EngineStartBar(
-                isEngineOn = device.engineRpm > 0,
-                onConfirmed = onEngineConfirmed,
-                modifier = Modifier.fillMaxWidth()
-            )
         }
     }
 }
@@ -149,7 +143,7 @@ private fun ParamIconColumnCustom(
             painter = painter,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.size(75.dp)
+            modifier = Modifier.size(150.dp)
         )
         Text(
             text = value,
