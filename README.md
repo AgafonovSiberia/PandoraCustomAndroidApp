@@ -1,7 +1,6 @@
 # PandoraCustomAndroidApp
 <p align="center">
   <img src="assets/Main.jpg" alt="MobileApp" width="195" height="385" />
-  &nbsp;&nbsp;&nbsp;&nbsp;
   <img src="assets/WearApp.png" alt="WearApp" width="195" height="530" />
 </p>
 
