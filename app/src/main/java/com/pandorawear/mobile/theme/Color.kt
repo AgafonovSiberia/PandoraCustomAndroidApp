@@ -3,34 +3,38 @@ package com.pandorawear.mobile.theme
 import androidx.compose.ui.graphics.Color
 
 /**
- * Material 3 dark palette tuned for "air" and clear elevation steps.
- * Goal: make cards / containers visually separate without increasing contrast too much.
+ * Calibrated dark palette to match reference:
+ * - clean blue accents
+ * - cool dark surfaces
+ * - clear container ladder for Material 3
  */
 
-// Brand / accent
-val BluePrimary = Color(0xFF3A6CE1)
-val BluePrimaryDark = Color(0xFF2E54B8)
-val BlueSecondary = Color(0xFF6A8DF3)
+// Clean blue accents (reference-like)
+val BluePrimary = Color(0xFF3B6EF2)          // main accent (tabs, highlights)
+val BluePrimaryContainer = Color(0xFF2B56D6) // containers (READY pill, engine btn base)
 
-// Core surfaces (dark)
-val BackgroundDark = Color(0xFF1d1d1f)          // app background
-val SurfaceDark = Color(0xFF14171C)             // base surface
-val SurfaceVariantDark = Color(0xFF1A1D23)      // variant (chips etc.)
+// Supporting neutrals (cool dark)
+val BackgroundDark = Color(0xFF0B0F14)
+val SurfaceDark = Color(0xFF11161D)
+val SurfaceVariantDark = Color(0xFF171D26)
 
-// Material 3 surface containers (elevation ladder)
-val SurfaceContainerLowest = Color(0xFF0B0D10)
-val SurfaceContainerLow = Color(0xFF171A1F)
-val SurfaceContainer = Color(0xFF1B1F25)
-val SurfaceContainerHigh = Color(0xFF22262D)
-val SurfaceContainerHighest = Color(0xFF2A2F37)
+// Material 3 container ladder (cool + distinct steps)
+val SurfaceContainerLowest = Color(0xFF0A0E13)
+val SurfaceContainerLow = Color(0xFF111721)
+val SurfaceContainer = Color(0xFF161D28)
+val SurfaceContainerHigh = Color(0xFF1C2431)
+val SurfaceContainerHighest = Color(0xFF243041)
 
-// Text
-val TextPrimary = Color(0xFFE6E8EE)
-val TextSecondary = Color(0xFFB3B9C6)
+// Text tones
+val TextPrimary = Color(0xFFE9EDF6)
+val TextSecondary = Color(0xFFB7C2D6)
 
 // Outline / dividers
-val Outline = Color(0xFF3A3F49)
-val OutlineVariant = Color(0xFF2A2F37)
+val Outline = Color(0xFF334055)
+val OutlineVariant = Color(0xFF253043)
 
-// Error
-val ErrorRed = Color(0xFFFF4A4A)
+// Status / semantic
+val ErrorRed = Color(0xFFFF4D4D)
+
+// Optional subtle “success/online” point if you need later
+val GreenOnline = Color(0xFF53D18C)

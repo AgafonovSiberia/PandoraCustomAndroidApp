@@ -41,12 +41,6 @@ import androidx.compose.ui.unit.dp
 import com.pandorawear.mobile.R
 import kotlinx.coroutines.delay
 
-/**
- * Single dynamic engine button:
- * - Start / Stop depending on isEngineOn
- * - Confirm via hold 2s
- * - Progress fill left->right
- */
 @Composable
 fun EngineStartButton(
     isEngineOn: Boolean,
@@ -59,9 +53,7 @@ fun EngineStartButton(
     var hasTriggered by remember { mutableStateOf(false) }
     var flashToken by remember { mutableIntStateOf(0) }
 
-    // IMPORTANT: keep a stable height so it never collapses in Row/weight layouts.
     val buttonHeight = 72.dp
-
     val longPressDurationMs = 2000
     val progress = remember { Animatable(0f) }
 
@@ -73,7 +65,9 @@ fun EngineStartButton(
 
     val baseColor = MaterialTheme.colorScheme.primaryContainer
     val progressColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.32f)
-    val shape = MaterialTheme.shapes.extraLarge
+
+    // МЕНЬШЕ СКРУГЛЕНИЕ — ближе к эталону и не “пузырь”
+    val shape = RoundedCornerShape(18.dp)
 
     val flashProgress = remember { Animatable(0f) }
     val flashAlpha = (1f - flashProgress.value) * 0.18f
@@ -122,7 +116,6 @@ fun EngineStartButton(
             .clip(shape),
         contentAlignment = Alignment.Center,
     ) {
-        // flash overlay
         Box(
             modifier = Modifier
                 .matchParentSize()
@@ -134,7 +127,6 @@ fun EngineStartButton(
                 .background(MaterialTheme.colorScheme.primary)
         )
 
-        // main layer
         Box(
             modifier = Modifier
                 .matchParentSize()
@@ -151,7 +143,6 @@ fun EngineStartButton(
                     )
                 }
         ) {
-            // progress fill
             Box(
                 modifier = Modifier
                     .matchParentSize()

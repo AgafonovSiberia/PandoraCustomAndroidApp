@@ -10,12 +10,15 @@ private val DarkColorScheme = darkColorScheme(
     primary = BluePrimary,
     onPrimary = Color.White,
 
-    primaryContainer = BluePrimaryDark,
+    primaryContainer = BluePrimaryContainer,
     onPrimaryContainer = Color.White,
 
-    // Secondary
-    secondary = BlueSecondary,
-    onSecondary = Color.White,
+    // Secondary (keep close to primary, but slightly softer)
+    secondary = Color(0xFF7FA2FF),
+    onSecondary = Color(0xFF0B0F14),
+
+    secondaryContainer = Color(0xFF223560),
+    onSecondaryContainer = TextPrimary,
 
     // Background / surface
     background = BackgroundDark,
@@ -27,7 +30,7 @@ private val DarkColorScheme = darkColorScheme(
     surfaceVariant = SurfaceVariantDark,
     onSurfaceVariant = TextSecondary,
 
-    // Material 3 elevated containers (THIS is what makes UI “airy”)
+    // Material 3 elevated containers (critical for “air”)
     surfaceContainerLowest = SurfaceContainerLowest,
     surfaceContainerLow = SurfaceContainerLow,
     surfaceContainer = SurfaceContainer,

@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -56,16 +57,16 @@ fun DeviceDashboardCard(
             lastSyncAtEpochMs = lastSyncAtEpochMs,
         )
 
+        QuickActionsRow(
+            isEngineOn = device.engineRpm > 0,
+            onEngineConfirmed = onEngineConfirmed,
+        )
+
         MetricsGrid(
             batteryVoltage = device.batteryVoltage,
             fuel = device.fuelTank,
             cabinTemp = device.cabinTemp,
             engineTemp = device.engineTemp,
-        )
-
-        QuickActionsRow(
-            isEngineOn = device.engineRpm > 0,
-            onEngineConfirmed = onEngineConfirmed,
         )
     }
 }
@@ -124,8 +125,9 @@ private fun HeroCard(
     val cs = MaterialTheme.colorScheme
     val shape = MaterialTheme.shapes.extraLarge
 
-    val blueGlow = cs.primary.copy(alpha = 0.22f)
-    val heroBase = cs.surfaceContainerHigh
+    // Ближе к эталону: тёмная база + “свет” справа в голубой
+    val base = cs.surfaceContainerHigh
+    val blue = cs.primary.copy(alpha = 0.22f)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -137,16 +139,16 @@ private fun HeroCard(
                 .fillMaxWidth()
                 .height(176.dp)
                 .clip(shape)
-                .background(heroBase)
+                .background(base)
         ) {
             Box(
                 modifier = Modifier
                     .matchParentSize()
                     .background(
                         Brush.radialGradient(
-                            colors = listOf(blueGlow, Color.Transparent),
-                            center = androidx.compose.ui.geometry.Offset(950f, 180f),
-                            radius = 950f
+                            colors = listOf(blue, Color.Transparent),
+                            center = Offset(980f, 160f),
+                            radius = 980f
                         )
                     )
             )
@@ -217,14 +219,13 @@ private fun QuickActionsRow(
     isEngineOn: Boolean,
     onEngineConfirmed: () -> Unit,
 ) {
-    val tileHeight = 50.dp
+    val tileHeight = 72.dp
 
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Engine tile — теперь гарантированно видимая (высота задана)
         EngineStartButton(
             isEngineOn = isEngineOn,
             onLongPressOverOneSecond = onEngineConfirmed,
@@ -256,9 +257,12 @@ private fun QuickActionStub(
     height: androidx.compose.ui.unit.Dp,
     modifier: Modifier = Modifier,
 ) {
+    // МЕНЬШЕ СКРУГЛЕНИЕ: убираем “пузырь”
+    val shape = RoundedCornerShape(18.dp)
+
     Surface(
         modifier = modifier.height(height),
-        shape = MaterialTheme.shapes.extraLarge,
+        shape = shape,
         color = MaterialTheme.colorScheme.surfaceContainer,
     ) {
         Row(
@@ -304,14 +308,14 @@ private fun MetricsGrid(
                 title = "АКБ",
                 value = String.format("%.1fV", batteryVoltage),
                 iconRes = R.drawable.battery_icon_512_vector,
-                accentCorner = true,
+                accent = true,
                 modifier = Modifier.weight(1f),
             )
             MetricCard(
                 title = "Топливо",
                 value = "$fuel",
                 iconRes = R.drawable.fuel_icon_512_vector,
-                accentCorner = false,
+                accent = false,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -324,14 +328,14 @@ private fun MetricsGrid(
                 title = "Темп. салона",
                 value = "$cabinTemp°",
                 iconRes = R.drawable.cabin_temp_icon_512_vector,
-                accentCorner = false,
+                accent = false,
                 modifier = Modifier.weight(1f),
             )
             MetricCard(
                 title = "Темп. двигателя",
                 value = "$engineTemp°",
                 iconRes = R.drawable.engine_temp_icon_512_vector,
-                accentCorner = true,
+                accent = true,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -343,14 +347,18 @@ private fun MetricCard(
     title: String,
     value: String,
     iconRes: Int,
-    accentCorner: Boolean,
+    accent: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val cs = MaterialTheme.colorScheme
     val shape = MaterialTheme.shapes.extraLarge
 
+    // Убираем “прямоугольники”:
+    // 1) мягкий общий градиент ВСЕМ карточкам (почти незаметный)
+    // 2) акцент — дополнительный мягкий подсвет, центр вынесен за границы, радиус большой
     val base = cs.surfaceContainer
-    val glow = cs.primary.copy(alpha = if (accentCorner) 0.18f else 0.10f)
+    val softTop = cs.onSurface.copy(alpha = 0.035f)
+    val blue = cs.primary.copy(alpha = if (accent) 0.14f else 0.08f)
 
     Card(
         modifier = modifier,
@@ -364,19 +372,31 @@ private fun MetricCard(
                 .height(92.dp)
                 .padding(14.dp),
         ) {
-            if (accentCorner) {
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .background(
-                            Brush.radialGradient(
-                                colors = listOf(glow, Color.Transparent),
-                                center = androidx.compose.ui.geometry.Offset(650f, 0f),
-                                radius = 650f
-                            )
+            // общий “воздух” (не должен читаться как отдельный прямоугольник)
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(softTop, Color.Transparent),
+                            start = Offset(0f, 0f),
+                            end = Offset(0f, 500f),
                         )
-                )
-            }
+                    )
+            )
+
+            // голубой подсвет справа сверху, но без жёстких краёв
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        Brush.radialGradient(
+                            colors = listOf(blue, Color.Transparent),
+                            center = Offset(850f, -120f),
+                            radius = 900f
+                        )
+                    )
+            )
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -404,7 +424,7 @@ private fun MetricCard(
                     painter = painterResource(iconRes),
                     contentDescription = null,
                     tint = cs.onSurfaceVariant,
-                    modifier = Modifier.size(50.dp),
+                    modifier = Modifier.size(30.dp),
                 )
             }
         }
