@@ -6,8 +6,9 @@
 Проект состоит из двух основных модулей:
 *   **:app**: Приложение для Android.
  <img src="assets/Main.jpg" alt="MobileApp" width="195" height="385" />
+ 
 *   **:wear**: Приложение для Wear OS.
-  <img src="assets/WearApp.png" alt="WearApp" width="195" height="385" />
+<img src="assets/WearApp.png" alt="WearApp" width="195" height="385" />
 
 
 ### Мобильное приложение
