@@ -22,6 +22,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -42,10 +45,21 @@ fun PandoraWatchScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    // Diagonal gradient from dark gray to black
+    val backgroundGradient = Brush.linearGradient(
+        colors = listOf(
+            Color(0xFF2C3E50), // Dark gray-blue
+            Color(0xFF1A1A1A), // Very dark gray
+            Color(0xFF000000), // Pure black
+        ),
+        start = Offset(0f, 0f), // Top-left
+        end = Offset.Infinite // Bottom-right
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surfaceContainer)
+            .background(backgroundGradient)
     ) {
         when (val state = uiState) {
             is PandoraWatchUiState.Loading -> LoadingScreen()
@@ -167,83 +181,28 @@ private fun ReadyScreen(
     val status = state.status
     val engineRunning = status.engineRunning == true
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 10.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.freelander_vector),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.size(50.dp),
-            )
+        // Gauge lines for battery and temperature
+        DualMetricGaugeLines(
+            batteryVoltage = status.batteryVoltage,
+            engineTemp = status.engineTemp,
+            modifier = Modifier.fillMaxSize(),
+        )
 
-            Text(
-                text = status.name ?: "Pandora",
-                style = MaterialTheme.typography.titleSmall,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onBackground,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                StatusChip(
-                    icon = painterResource(R.drawable.battery_icon_512_vector),
-                    valueText = status.batteryVoltage?.let { "${it} В" } ?: "--",
-                    contentDescription = "Напряжение бортовой сети",
-                    modifier = Modifier.weight(1f),
-                )
-
-                StatusChip(
-                    icon = painterResource(R.drawable.engine_temp_icon_512_vector),
-                    valueText = status.engineTemp?.let { "${it}°" } ?: "--",
-                    contentDescription = "Температура двигателя",
-                    modifier = Modifier.weight(1f),
-                )
-
-                StatusChip(
-                    icon = painterResource(R.drawable.cabin_temp_icon_512_vector),
-                    valueText = status.cabinTemp?.let { "${it}°" } ?: "--",
-                    contentDescription = "Температура двигателя",
-                    modifier = Modifier.weight(1f),
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 30.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            EngineStartButton(
-                isEngineOn = engineRunning,
-                onLongPressOverOneSecond = {
-                    if (engineRunning) {
-                        onStopClick()
-                    } else {
-                        onStartClick()
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally),
-            )
-
-            Spacer(modifier = Modifier.height(6.dp))
-        }
+        // Circular engine start/stop button in the center
+        CircularEngineButton(
+            isEngineOn = engineRunning,
+            onLongPressOverOneSecond = {
+                if (engineRunning) {
+                    onStopClick()
+                } else {
+                    onStartClick()
+                }
+            },
+            modifier = Modifier.align(Alignment.Center),
+        )
     }
 }
