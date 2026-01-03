@@ -56,16 +56,16 @@ fun DeviceDashboardCard(
             lastSyncAtEpochMs = lastSyncAtEpochMs,
         )
 
-        QuickActionsRow(
-            isEngineOn = device.engineRpm > 0,
-            onEngineConfirmed = onEngineConfirmed,
-        )
-
         MetricsGrid(
             batteryVoltage = device.batteryVoltage,
             fuel = device.fuelTank,
             cabinTemp = device.cabinTemp,
             engineTemp = device.engineTemp,
+        )
+
+        QuickActionsRow(
+            isEngineOn = device.engineRpm > 0,
+            onEngineConfirmed = onEngineConfirmed,
         )
     }
 }
@@ -124,8 +124,6 @@ private fun HeroCard(
     val cs = MaterialTheme.colorScheme
     val shape = MaterialTheme.shapes.extraLarge
 
-    // ЭТАЛОННЫЙ ХАРАКТЕР: тёмная база + справа голубой “свет” + чуть сверху.
-    // Не полагаемся на тему: добавляем controlled glow прямо здесь.
     val blueGlow = cs.primary.copy(alpha = 0.22f)
     val heroBase = cs.surfaceContainerHigh
 
@@ -141,7 +139,6 @@ private fun HeroCard(
                 .clip(shape)
                 .background(heroBase)
         ) {
-            // Мягкий голубой градиент справа (как в эталоне)
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -154,21 +151,6 @@ private fun HeroCard(
                     )
             )
 
-            // Лёгкий верхний засвет (чтобы “воздух” появился)
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .background(
-                        Brush.radialGradient(
-                            colors = listOf(cs.onSurface.copy(alpha = 0.06f), Color.Transparent),
-                            center = androidx.compose.ui.geometry.Offset(180f, 0f),
-                            radius = 700f
-                        )
-                    )
-            )
-
-            // 1) Автомобиль: делаем КРУПНЕЕ и “вылетающим” за края карточки
-            //    чтобы он читался как доминанта как в эталоне.
             Icon(
                 painter = painterResource(R.drawable.freelander_vector),
                 contentDescription = null,
@@ -235,38 +217,32 @@ private fun QuickActionsRow(
     isEngineOn: Boolean,
     onEngineConfirmed: () -> Unit,
 ) {
-    // 2) Кнопки должны делить пространство поровну.
-    //    Делаем 3 равные “плитки” одинаковой высоты.
-    val tileHeight = 72.dp
+    val tileHeight = 50.dp
 
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Engine tile (long press)
-        Box(
+        // Engine tile — теперь гарантированно видимая (высота задана)
+        EngineStartButton(
+            isEngineOn = isEngineOn,
+            onLongPressOverOneSecond = onEngineConfirmed,
             modifier = Modifier
                 .weight(1f)
-                .height(tileHeight)
-        ) {
-            EngineStartButton(
-                isEngineOn = isEngineOn,
-                onLongPressOverOneSecond = onEngineConfirmed,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
+                .height(tileHeight),
+        )
 
         QuickActionStub(
             title = "Снять",
-            iconRes = R.drawable.fuel_icon_512_vector,
+            iconRes = R.drawable.cabin_temp_icon_512_vector,
             height = tileHeight,
             modifier = Modifier.weight(1f),
         )
 
         QuickActionStub(
             title = "Багажник",
-            iconRes = R.drawable.fuel_icon_512_vector,
+            iconRes = R.drawable.cabin_temp_icon_512_vector,
             height = tileHeight,
             modifier = Modifier.weight(1f),
         )
@@ -373,7 +349,6 @@ private fun MetricCard(
     val cs = MaterialTheme.colorScheme
     val shape = MaterialTheme.shapes.extraLarge
 
-    // 4) Градиенты ближе к эталону: базовая тёмная карточка + голубой “угол” на части карточек
     val base = cs.surfaceContainer
     val glow = cs.primary.copy(alpha = if (accentCorner) 0.18f else 0.10f)
 
@@ -389,7 +364,6 @@ private fun MetricCard(
                 .height(92.dp)
                 .padding(14.dp),
         ) {
-            // мягкий голубой “угол” (как у эталона, без кричащих цветов)
             if (accentCorner) {
                 Box(
                     modifier = Modifier
@@ -426,23 +400,12 @@ private fun MetricCard(
                     )
                 }
 
-                // 3) Иконки: фон НЕ должен бросаться в глаза, а сама иконка должна быть больше.
-                //    Поэтому:
-                //    - фон делаем еле заметным (onSurface alpha 0.05)
-                //    - иконку увеличиваем до 30dp
-                Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = cs.onSurface.copy(alpha = 0.05f),
-                ) {
-                    Icon(
-                        painter = painterResource(iconRes),
-                        contentDescription = null,
-                        tint = cs.onSurfaceVariant,
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .size(30.dp),
-                    )
-                }
+                Icon(
+                    painter = painterResource(iconRes),
+                    contentDescription = null,
+                    tint = cs.onSurfaceVariant,
+                    modifier = Modifier.size(50.dp),
+                )
             }
         }
     }

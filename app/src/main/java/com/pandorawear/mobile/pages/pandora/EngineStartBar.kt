@@ -10,7 +10,9 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -44,8 +46,6 @@ import kotlinx.coroutines.delay
  * - Start / Stop depending on isEngineOn
  * - Confirm via hold 2s
  * - Progress fill left->right
- *
- * Important: DO NOT enforce minWidth here; parent Row weights should control size.
  */
 @Composable
 fun EngineStartButton(
@@ -58,6 +58,9 @@ fun EngineStartButton(
     var isPressed by remember { mutableStateOf(false) }
     var hasTriggered by remember { mutableStateOf(false) }
     var flashToken by remember { mutableIntStateOf(0) }
+
+    // IMPORTANT: keep a stable height so it never collapses in Row/weight layouts.
+    val buttonHeight = 72.dp
 
     val longPressDurationMs = 2000
     val progress = remember { Animatable(0f) }
@@ -115,9 +118,11 @@ fun EngineStartButton(
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .height(buttonHeight)
             .clip(shape),
         contentAlignment = Alignment.Center,
     ) {
+        // flash overlay
         Box(
             modifier = Modifier
                 .matchParentSize()
@@ -129,6 +134,7 @@ fun EngineStartButton(
                 .background(MaterialTheme.colorScheme.primary)
         )
 
+        // main layer
         Box(
             modifier = Modifier
                 .matchParentSize()
@@ -145,6 +151,7 @@ fun EngineStartButton(
                     )
                 }
         ) {
+            // progress fill
             Box(
                 modifier = Modifier
                     .matchParentSize()
@@ -157,7 +164,7 @@ fun EngineStartButton(
 
             Row(
                 modifier = Modifier
-                    .matchParentSize()
+                    .fillMaxSize()
                     .padding(horizontal = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -173,7 +180,7 @@ fun EngineStartButton(
                 )
 
                 Text(
-                    text = if (isEngineOn) "Стоп" else "Запуск",
+                    text = if (isEngineOn) "Запущен" else "Запуск",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                     fontWeight = FontWeight.SemiBold,
